@@ -1,4 +1,12 @@
 #pragma once
-class Direction {
 
+#include "Includer.h"
+
+class Direction {
+public:
+	Direction() = default;
+	Direction(float _x, float _y, float _z)
+		:x{ _x }, y{ _y }, z{ _z }{}
+private:
+	float x, y, z;
 };
