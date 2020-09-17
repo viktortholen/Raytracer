@@ -14,9 +14,9 @@ public:
 	~Ray() {
 		delete endPointTriangle;
 	}
-	Ray(const Ray& other) { //copy
-		ps = other.ps;
-		pe = other.pe;
+	Ray(const Ray& other)
+		:ps{ other.ps }, pe{pe}{ //copy
+
 		vertex_list = other.vertex_list;
 		color = other.color;
 	}

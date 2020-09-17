@@ -18,8 +18,8 @@ public:
 
 
 private:
-	const static int resolution_y = 800;
-	const static int resolution_z = 800;
+	const int resolution_y = 800;
+	const int resolution_z = 800;
 	
 	Pixel** pixel_array = new Pixel* [resolution_z];
 
@@ -34,7 +34,7 @@ void Camera::render() {
 	//for loop för att gå igenom pixlar - skjuta Ray genom alla
 	int quad_size_y = (Camera::resolution_y / 2) + 1;
 	int quad_size_z = (Camera::resolution_z / 2) + 1;
-	float delta = 2 / resolution_y;
+	float delta = static_cast<float>(2 / resolution_y);
 
 	for (int i = 0; i < resolution_y; i++)
 	{
