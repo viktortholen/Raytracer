@@ -6,17 +6,35 @@
 class Ray {
 public:
 	Ray(const Vertex& start, const Vertex& end)
+		:ps{start}, pe{end}
 	{
 		vertex_list.push_back(start);
 		vertex_list.push_back(end);
-
-		/*startPoint = vertex_list.front();
-		endPoint = vertex_list.back();*/
 	}
+	~Ray() {
+		delete endPointTriangle;
+	}
+	Ray(const Ray& other) { //copy
+		ps = other.ps;
+		pe = other.pe;
+		vertex_list = other.vertex_list;
+		color = other.color;
+	}
+	Ray& operator=(Ray& p) { //assignment
+		Ray temp{ p };
+		std::swap(p.ps, ps);
+		std::swap(p.pe, pe);
+		std::swap(p.color, color);
+		std::swap(p.vertex_list, vertex_list);
+		std::swap(p.endPointTriangle, endPointTriangle);
+
+		return *this;
+	}
+
 private:
-	//Vertex& startPoint, endPoint;
+	Vertex ps, pe;
 	
 	std::list<Vertex> vertex_list;
-	ColorDbl color;
-	//Triangle* endPointTriangle = new Triangle();
+	ColorDbl color{0,0,0};
+	Triangle* endPointTriangle;
 };
