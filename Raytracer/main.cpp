@@ -17,7 +17,7 @@ int main() {
 
 	Camera camera{};
 	camera.render();
-
+	
 
 	return 0;
 }

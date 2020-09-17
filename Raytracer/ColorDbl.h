@@ -4,9 +4,9 @@
 class ColorDbl {
 public:
 	ColorDbl() = default;
-	ColorDbl(double _r, double _g, double _b) 
-		:r{ _r }, g{ _g }, b{ _b } {}
+	ColorDbl(double r, double g, double b) 
+		:color{r,g,b} {}
 
 private:
-	double r, g, b;
+	glm::vec3 color;
 };

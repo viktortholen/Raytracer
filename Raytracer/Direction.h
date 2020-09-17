@@ -5,9 +5,11 @@
 class Direction {
 public:
 	Direction() = default;
-	Direction(float _x, float _y, float _z)
-		:x{ _x }, y{ _y }, z{ _z }{}
+	Direction(float x, float y, float z)
+		:dir{x,y,z} {}
+	Direction(glm::vec3 vec)
+		:dir{ vec } {}
 	//assignment copy
 private:
-	float x, y, z;
+	glm::vec3 dir;
 };

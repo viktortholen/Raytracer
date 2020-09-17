@@ -4,36 +4,40 @@
 class Vertex {
 public:
 	Vertex() = default;
-	Vertex(float _x, float _y, float _z, float _w = 0)
-		:x{ _x }, y{ _y }, z{ _z }, w{ _w } {}
+	Vertex(float x, float y, float z, float w = 0)
+		:coords{x, y, z, w } {}
 	~Vertex() = default;
 
 	Vertex(const Vertex& other) {
-		x = other.x;
-		y = other.y;
-		z = other.z;
-		w = other.w;
+		coords = other.coords;
+
 	}
 
 	Vertex& operator=(Vertex p) { //assignment
 		Vertex temp{ p };
-		std::swap(p.x, x);
-		std::swap(p.y, y);
-		std::swap(p.z, z);
-		std::swap(p.w, w);
+		std::swap(p.coords, coords);
 		return *this;
 	}
 
 	Vertex operator-(const Vertex& v) {
 		Vertex tmp{ *this };
-		tmp.x -= v.x;
-		tmp.y -= v.y;
-		tmp.z -= v.z;
-		tmp.w -= v.w;
+		tmp.coords =- v.coords;
 		return tmp;
+	}
+	//glm::vec4 getCoords() {
+	//	return coords;
+	//}
+
+	Vertex operator*(const Vertex& v) {
+		Vertex tmp{ *this };
+		glm::vec3 vec1 = glm::vec3(coords[0], coords[1], coords[2]);
+		glm::vec3 vec2 = glm::vec3(v.coords[0], v.coords[1], v.coords[2]);
+		glm::vec3 res = glm::cross(vec1, vec2);
+		return Vertex(res[0], res[1], res[2], 1); //w = 0 eller 1?
+
 	}
 
 private:
-	float x, y, z, w;
+	glm::vec4 coords;
 	friend class Triangle;
 };

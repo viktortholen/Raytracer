@@ -1,8 +1,9 @@
 #pragma once
 #include "Includer.h"
+#include "Triangle.h"
 #include "ColorDbl.h"
 #include "Vertex.h"
-#include "Triangle.h"
+
 class Ray {
 public:
 	Ray(const Vertex& start, const Vertex& end)
@@ -10,6 +11,7 @@ public:
 	{
 		vertex_list.push_back(start);
 		vertex_list.push_back(end);
+		//endPointTriangle = new Triangle();
 	}
 	~Ray() {
 		delete endPointTriangle;
@@ -37,4 +39,6 @@ private:
 	std::list<Vertex> vertex_list;
 	ColorDbl color{0,0,0};
 	Triangle* endPointTriangle;
+
+	friend class Triangle;
 };
