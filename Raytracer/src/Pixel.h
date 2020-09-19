@@ -5,7 +5,7 @@
 
 class Pixel {
 public:
-	Pixel() {}
+	Pixel() = default;
 	Pixel(const ColorDbl& _color, Ray _ray)
 		:color{_color}, ray{&_ray}{}
 
@@ -24,7 +24,7 @@ public:
 	}
 
 private:
-	ColorDbl color;
-	Ray* ray;
+	ColorDbl color{0,0,0};
+	Ray* ray = NULL;
 
 };

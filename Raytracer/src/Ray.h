@@ -1,43 +1,25 @@
 #pragma once
 #include "Includer.h"
-#include "Triangle.h"
-#include "ColorDbl.h"
 #include "Vertex.h"
+#include "ColorDbl.h"
+
+#include "Triangle.h"
+class Triangle; //forward declaration
 
 class Ray {
 public:
-	Ray(const Vertex& start, const Vertex& end)
-		:ps{start}, pe{end}
-	{
-		vertex_list.push_back(start);
-		vertex_list.push_back(end);
-	}
-	~Ray() {
-		delete endPointTriangle;
-	}
-	Ray(const Ray& other)
-		:ps{ other.ps }, pe{pe}{ //copy
+	Ray(const Vertex& start, const Vertex& end);
 
-		vertex_list = other.vertex_list;
-		color = other.color;
-	}
-	Ray& operator=(Ray& p) { //assignment
-		Ray temp{ p };
-		std::swap(p.ps, ps);
-		std::swap(p.pe, pe);
-		std::swap(p.color, color);
-		std::swap(p.vertex_list, vertex_list);
-		std::swap(p.endPointTriangle, endPointTriangle);
+	~Ray();
 
-		return *this;
-	}
+	Ray(const Ray& other);
+	Ray& operator=(Ray p);
 
 private:
+	friend class Triangle;
+
 	Vertex ps, pe;
-	
 	std::list<Vertex> vertex_list;
 	ColorDbl color{0,0,0};
 	Triangle* endPointTriangle = NULL;
-
-	friend class Triangle;
 };

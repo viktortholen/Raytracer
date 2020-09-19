@@ -8,5 +8,5 @@ public:
 		:color{r,g,b} {}
 
 private:
-	glm::vec3 color;
+	glm::vec3 color{0,0,0};
 };

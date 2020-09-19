@@ -1,6 +1,6 @@
 #pragma once
-#include "Includer.h"
-#include "Triangle.h"
+
+//#include "Triangle.h"
 class Vertex {
 public:
 	Vertex() = default;

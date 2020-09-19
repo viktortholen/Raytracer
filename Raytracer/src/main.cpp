@@ -9,7 +9,7 @@ int main() {
 	//					ColorDbl, Pixel, Camera, Vertex
 
 	//Subclasses? :	Sphere, tetrahedral - contains Triangles
-	std::cout << "Hello world";
+	std::cout << "Hello world"<<std::endl;
 
 
 	Scene theScene{};

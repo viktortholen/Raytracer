@@ -2,6 +2,9 @@
 #include "Includer.h"
 #include "Pixel.h"
 #include "Ray.h"
+
+#define LOG(x) std::cout << x;
+
 class Camera {
 public:
 	Camera() {
@@ -35,9 +38,15 @@ void Camera::render() {
 	int quad_size_y = (Camera::resolution_y / 2) + 1;
 	int quad_size_z = (Camera::resolution_z / 2) + 1;
 	float delta = static_cast<float>(2 / resolution_y);
-
+	float percentage;
 	for (int i = 0; i < resolution_y; i++)
 	{
+		//LOG progress:
+		percentage = (static_cast<float>((i + 1)) / resolution_y)* 100;
+		LOG("\rRendering: " << percentage <<std::fixed<<std::setprecision(0)<<std::left<<std::setw(7)<< "%");
+		/******************************************/
+
+
 		for (int j = 0; j < resolution_z; j++)
 		{
 			float ry = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -45,7 +54,7 @@ void Camera::render() {
 			Vertex pixelIntersection{ 0.0, (i - quad_size_y + ry)*delta, (j-quad_size_z + rz)*delta};
 			Ray ray{ e1, pixelIntersection};
 			
-
+			
 		}
 	}
 }
