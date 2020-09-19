@@ -1,7 +1,7 @@
 #pragma once
 #include "Includer.h"
 #include "Pixel.h"
-
+#include "Ray.h"
 class Camera {
 public:
 	Camera() {

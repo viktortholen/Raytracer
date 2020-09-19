@@ -11,7 +11,6 @@ public:
 	{
 		vertex_list.push_back(start);
 		vertex_list.push_back(end);
-		//endPointTriangle = new Triangle();
 	}
 	~Ray() {
 		delete endPointTriangle;
@@ -38,7 +37,7 @@ private:
 	
 	std::list<Vertex> vertex_list;
 	ColorDbl color{0,0,0};
-	Triangle* endPointTriangle;
+	Triangle* endPointTriangle = NULL;
 
 	friend class Triangle;
 };
