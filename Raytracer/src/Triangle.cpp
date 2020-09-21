@@ -2,16 +2,41 @@
 #include "Triangle.h"
 
 
-bool Triangle::rayIntersection(Ray ray) {
+bool Triangle::rayIntersection(Ray& ray) {
 	Vertex T = ray.ps - v0;
 	Vertex E1 = v1 - v0;
 	Vertex E2 = v2 - v0;
 	Vertex D = ray.pe - ray.ps;
-
 	Vertex P = D.crossProduct(E2);
 	Vertex Q = T.crossProduct(E1);
 
-	return false;
+	//std::cout << P.dotProduct(E1);
+
+	float u = P.dotProduct(T) / P.dotProduct(E1);
+
+	if (u < 0)
+		return false;
+
+	float v = Q.dotProduct(D) / P.dotProduct(E1);
+
+	if (v < 0)
+		return false;
+
+	if (static_cast<float>(u + v) > 1)
+		return false;
+
+	float t = Q.dotProduct(E2) / P.dotProduct(E1);
+	//std::cout << "\n "<<t << " " << u << " " << v;
+	if (t < 0.000001);
+		return false;
+
+	
+	std::cout << "we made it!";
+
+	//Vertex x = ray.ps + t*(ray.pe - ray.ps);
+
+	//ray.setTriangle(*this); //save the triangle
+	return true;
 }
 Triangle::Triangle(const Triangle& other)
 {
@@ -48,4 +73,7 @@ void Triangle::calculateNormal()
 	//double Ny = (U.z * V.x) - (U.x * V.z);
 	//double Nz = (U.x * V.y) - (U.y * V.x);
 	normal = Direction{ Nx,Ny,Nz };
+}
+ColorDbl Triangle::getColor() {
+	return color;
 }

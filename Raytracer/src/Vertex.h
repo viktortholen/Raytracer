@@ -21,7 +21,9 @@ public:
 
 	Vertex operator-(const Vertex& v) const{
 		Vertex tmp{ *this };
-		tmp.coords =- v.coords;
+		tmp.coords[0] -= v.coords[0];
+		tmp.coords[1] -= v.coords[1];
+		tmp.coords[2] -= v.coords[2];
 		return tmp;
 	}
 	Vertex crossProduct(const Vertex& v) const
@@ -33,7 +35,10 @@ public:
 	{
 		return glm::dot(glm::vec3(coords[0], coords[1], coords[2]), glm::vec3(v.coords[0], v.coords[1], v.coords[2]));
 	}
-
+	void printCoords()
+	{
+		std::cout << "\nx: " << coords[0] << ", y: " << coords[1] << " , z: " << coords[2];
+	}
 	//glm::vec4 getCoords() {
 	//	return coords;
 	//}

@@ -23,6 +23,19 @@ public:
 		return *this;
 	}
 
+	void setColor(float &r, float &g, float &b)
+	{
+		color = { r,g,b };
+	}
+	void setColor(ColorDbl& rgb)
+	{
+		color = rgb;
+	}
+	glm::vec3 getColor()
+	{
+		return color.getColorVec();
+	}
+
 private:
 	ColorDbl color{0,0,0};
 	Ray* ray = NULL;

@@ -8,3 +8,5 @@
 #include <math.h>
 #include <vector>
 #include <iomanip>
+#include <iterator>
+#include <fstream>

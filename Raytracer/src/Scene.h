@@ -12,12 +12,14 @@ public:
 		triangleList.clear();
 	}
 	void createScene();
-
+	std::list<Triangle*> getTriangleList();
 private:
 	std::list<Triangle*> triangleList;
 
 };
-
+std::list<Triangle*> Scene::getTriangleList() {
+	return triangleList;
+}
 void Scene::createScene() {
 	//Tak
 	triangleList.push_back(new Triangle(Vertex(5, 0, 5), Vertex(-3, 0, 5), Vertex(0, 6, 5), ColorDbl(255,0,0)));

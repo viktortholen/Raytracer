@@ -16,7 +16,7 @@ public:
 	{
 		calculateNormal();
 	}
-	bool rayIntersection(Ray ray);
+	bool rayIntersection(Ray& ray);
 
 	~Triangle() = default;
 
@@ -26,6 +26,8 @@ public:
 
 
 	void calculateNormal();
+
+	ColorDbl getColor();
 
 private:
 	ColorDbl color{255,255,255};
