@@ -13,6 +13,8 @@ public:
 		}
 	}
 	~Camera() {
+		for (int i = 0; i < resolution_z; i++)
+			delete[] pixel_array[i];
 		delete[] pixel_array;
 	}
 
@@ -28,7 +30,7 @@ private:
 
 	const Vertex e1{ -1,0,0 };
 	const Vertex e2{ -2,0,0 };
-	bool switchEyePoint = 0;
+	bool eyePoint = 0;
 
 };
 

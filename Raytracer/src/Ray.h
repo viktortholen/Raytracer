@@ -13,8 +13,8 @@ public:
 	~Ray();
 
 	Ray(const Ray& other);
-	Ray& operator=(Ray p);
-
+	Ray& operator=(Ray &p);
+	void setTriangle(Triangle t);
 private:
 	friend class Triangle;
 

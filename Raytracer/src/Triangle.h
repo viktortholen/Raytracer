@@ -16,13 +16,13 @@ public:
 	{
 		calculateNormal();
 	}
-	Vertex rayIntersection(Ray ray);
+	bool rayIntersection(Ray ray);
 
 	~Triangle() = default;
 
 	Triangle(const Triangle& other);
 
-	Triangle& operator=(Triangle p);
+	Triangle& operator=(Triangle &p);
 
 
 	void calculateNormal();

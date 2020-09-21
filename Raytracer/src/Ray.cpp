@@ -3,11 +3,12 @@
 
 Ray::Ray(const Vertex& start, const Vertex& end) : ps{start}, pe{end}
 {
-	vertex_list.push_back(start);
-	vertex_list.push_back(end);
+	//vertex_list.push_back(start); //crashes dr memory
+	//vertex_list.push_back(end);
 }
 Ray::~Ray() 
 {
+	vertex_list.clear();
 	delete endPointTriangle;
 }
 Ray::Ray(const Ray& other)
@@ -17,7 +18,7 @@ Ray::Ray(const Ray& other)
 	vertex_list = other.vertex_list;
 	color = other.color;
 }
-Ray& Ray::operator=(Ray p) 
+Ray& Ray::operator=(Ray &p) 
 {
 	Ray temp{ p };
 	std::swap(p.ps, ps);
@@ -27,4 +28,8 @@ Ray& Ray::operator=(Ray p)
 	std::swap(p.endPointTriangle, endPointTriangle);
 
 	return *this;
+}
+void Ray::setTriangle(Triangle t)
+{
+	endPointTriangle = &t;
 }

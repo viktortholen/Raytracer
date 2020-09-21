@@ -4,7 +4,13 @@
 class Scene {
 public:
 	Scene() = default;
-
+	~Scene()
+	{
+		for (std::list<Triangle*>::iterator it = triangleList.begin(); it != triangleList.end(); ++it) {
+			delete* it;
+		}
+		triangleList.clear();
+	}
 	void createScene();
 
 private:
