@@ -3,23 +3,25 @@
 
 
 bool Triangle::rayIntersection(Ray& ray) {
+	const float EPSILON = 0.0000001;
+
 	Vertex T = ray.ps - v0;
 	Vertex E1 = v1 - v0;
 	Vertex E2 = v2 - v0;
+	Vertex dir = ray.pe - ray.ps;
 	Vertex D = ray.pe - ray.ps;
 	Vertex P = D.crossProduct(E2);
 	Vertex Q = T.crossProduct(E1);
 
-	//std::cout << P.dotProduct(E1);
 
 	float u = P.dotProduct(T) / P.dotProduct(E1);
 
-	if (u < 0)
+	if (u < EPSILON)
 		return false;
 
 	float v = Q.dotProduct(D) / P.dotProduct(E1);
 
-	if (v < 0)
+	if (v < EPSILON)
 		return false;
 
 	if (static_cast<float>(u + v) > 1)
@@ -27,13 +29,10 @@ bool Triangle::rayIntersection(Ray& ray) {
 
 	float t = Q.dotProduct(E2) / P.dotProduct(E1);
 	//std::cout << "\n "<<t << " " << u << " " << v;
-	if (t < 0.000001);
+	if (t < EPSILON)
+	{
 		return false;
-
-	
-	std::cout << "we made it!";
-
-	//Vertex x = ray.ps + t*(ray.pe - ray.ps);
+	}
 
 	//ray.setTriangle(*this); //save the triangle
 	return true;

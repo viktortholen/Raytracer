@@ -12,12 +12,12 @@ public:
 		triangleList.clear();
 	}
 	void createScene();
-	std::list<Triangle*> getTriangleList();
+	std::list<Triangle*> getTriangleList() const;
 private:
 	std::list<Triangle*> triangleList;
 
 };
-std::list<Triangle*> Scene::getTriangleList() {
+std::list<Triangle*> Scene::getTriangleList() const{
 	return triangleList;
 }
 void Scene::createScene() {
@@ -31,13 +31,13 @@ void Scene::createScene() {
 	triangleList.push_back(new Triangle(Vertex(5, 0, 5), Vertex(0, -6, 5), Vertex(-3, 0, 5), ColorDbl(255, 0, 0)));
 
 	//Golv
-	triangleList.push_back(new Triangle(Vertex(5, 0, 5), Vertex(0, 6, 5), Vertex(-3, 0, -5), ColorDbl(0, 255, 0)));
-	triangleList.push_back(new Triangle(Vertex(5, 0, 5), Vertex(10, 6, 5), Vertex(0, 6, -5), ColorDbl(0,255,0)));
-	triangleList.push_back(new Triangle(Vertex(5, 0, 5), Vertex(13, 0, 5), Vertex(10, 6, -5), ColorDbl(0,255,0)));
+	triangleList.push_back(new Triangle(Vertex(5, 0, -5), Vertex(0, 6, -5), Vertex(-3, 0, -5), ColorDbl(0, 255, 0)));
+	triangleList.push_back(new Triangle(Vertex(5, 0, -5), Vertex(10, 6, -5), Vertex(0, 6, -5), ColorDbl(0,255,0)));
+	triangleList.push_back(new Triangle(Vertex(5, 0, -5), Vertex(13, 0, -5), Vertex(10, 6, -5), ColorDbl(0,255,0)));
 
-	triangleList.push_back(new Triangle(Vertex(5, 0, 5), Vertex(10, -6, 5), Vertex(13, 0, -5), ColorDbl(0,255,0)));
-	triangleList.push_back(new Triangle(Vertex(5, 0, 5), Vertex(0, -6, 5), Vertex(10, -6, -5), ColorDbl(0,255,0)));
-	triangleList.push_back(new Triangle(Vertex(5, 0, 5), Vertex(-3, 0, 5), Vertex(0, -6, -5), ColorDbl(0,255,0)));
+	triangleList.push_back(new Triangle(Vertex(5, 0, -5), Vertex(10, -6, -5), Vertex(13, 0, -5), ColorDbl(0,255,0)));
+	triangleList.push_back(new Triangle(Vertex(5, 0, -5), Vertex(0, -6, -5), Vertex(10, -6, -5), ColorDbl(0,255,0)));
+	triangleList.push_back(new Triangle(Vertex(5, 0, -5), Vertex(-3, 0, -5), Vertex(0, -6, -5), ColorDbl(0,255,0)));
 
 	//Vägg Upp
 	triangleList.push_back(new Triangle(Vertex(0, 6, 5), Vertex(0, 6, -5), Vertex(10, 6, -5), ColorDbl(0,255,255)));
@@ -46,8 +46,8 @@ void Scene::createScene() {
 	triangleList.push_back(new Triangle(Vertex(-3, 0, 5), Vertex(-3, 0, -5), Vertex(0, 6, -5), ColorDbl(255,0,255)));
 	triangleList.push_back(new Triangle(Vertex(-3, 0, 5), Vertex(0, 6, -5), Vertex(0, 6, 5), ColorDbl(255,0,255)));
 	//Vägg Upp Höger
-	triangleList.push_back(new Triangle(Vertex(10, 6, 5), Vertex(10, 6, -5), Vertex(13, 0, -5), ColorDbl(0, 255, 0)));
-	triangleList.push_back(new Triangle(Vertex(10, 6, 5), Vertex(13, 0, -5), Vertex(13, 0, 5), ColorDbl(0, 255, 0)));
+	triangleList.push_back(new Triangle(Vertex(10, 6, 5), Vertex(10, 6, -5), Vertex(13, 0, -5), ColorDbl(128, 128, 128)));
+	triangleList.push_back(new Triangle(Vertex(10, 6, 5), Vertex(13, 0, -5), Vertex(13, 0, 5), ColorDbl(128, 128, 128)));
 
 	//Vägg Ner
 	triangleList.push_back(new Triangle(Vertex(10, -6, 5), Vertex(10, -6, -5), Vertex(0, -6, -5), ColorDbl(255, 255, 0)));

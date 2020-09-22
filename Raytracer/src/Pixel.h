@@ -23,10 +23,6 @@ public:
 		return *this;
 	}
 
-	void setColor(float &r, float &g, float &b)
-	{
-		color = { r,g,b };
-	}
 	void setColor(ColorDbl& rgb)
 	{
 		color = rgb;
