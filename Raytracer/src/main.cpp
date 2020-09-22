@@ -52,7 +52,7 @@ int main() {
 	//	}
 	//	std::cout << "\n";
 	//}
-
+	//std::cout << std::endl << pixel_array[0][2];
 
 	Scene theScene{};
 	theScene.createScene();

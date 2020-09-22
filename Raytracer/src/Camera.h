@@ -56,17 +56,16 @@ void Camera::render(const Scene& scene) {
 		{
 			float ry = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 			float rz = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-			Vertex pixelIntersection{ 0.0, (i - quad_size_y + ry)*delta, (j-quad_size_z + rz)*delta};
+			Vertex pixelIntersection{ 0.0, (j - quad_size_y + ry)*delta, (i - quad_size_z + rz)*delta};
 
 			Ray ray{ e1, pixelIntersection};
 			
 			for (std::list<Triangle*>::iterator it = trianglelist.begin(); it != trianglelist.end(); it++)
 			{
-				if ((*it)->rayIntersection(ray))
+				if ((*it)->rayIntersection(ray))//får tillbaka parametrar och sparar triangeln med lägst t
 				{
 					ColorDbl col = (*it)->getColor();
 					pixel_array[i][j].setColor(col);
-					break;
 				}
 				else
 				{
@@ -75,8 +74,7 @@ void Camera::render(const Scene& scene) {
 
 				}
 			}
-			
-			
+			//gör det vi ska med triangeln som träffats
 		}
 	}
 }
@@ -86,12 +84,13 @@ void Camera::createImage()
 	img << "P3" << std::endl;
 	img << width << " " << height << std::endl;
 	img << "255" << std::endl;
+	
+	LOG("\nCreating image...\n");
 
-	for (int j = height-1; j >= 0; j--)
+	for (int i = height-1; i >= 0; i--)
 	{
-		for (int i = 0; i < width; i++)
+		for (int j = width-1; j >= 0; j--)
 		{
-			//glm::vec3 rgb = pixel_array[i, j]->getColor();
 			glm::vec3 rgb = pixel_array[i][j].getColor();
 
 			img << rgb[0] << " " << rgb[1] << " " << rgb[2] << std::endl;

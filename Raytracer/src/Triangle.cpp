@@ -3,12 +3,11 @@
 
 
 bool Triangle::rayIntersection(Ray& ray) {
-	const float EPSILON = 0.0000001;
+	const float EPSILON = 0.00001f;
 
 	Vertex T = ray.ps - v0;
 	Vertex E1 = v1 - v0;
 	Vertex E2 = v2 - v0;
-	Vertex dir = ray.pe - ray.ps;
 	Vertex D = ray.pe - ray.ps;
 	Vertex P = D.crossProduct(E2);
 	Vertex Q = T.crossProduct(E1);
@@ -33,8 +32,8 @@ bool Triangle::rayIntersection(Ray& ray) {
 	{
 		return false;
 	}
+	ray.setTriangle(*this); //save the triangle
 
-	//ray.setTriangle(*this); //save the triangle
 	return true;
 }
 Triangle::Triangle(const Triangle& other)

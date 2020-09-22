@@ -14,12 +14,12 @@ public:
 
 	Ray(const Ray& other);
 	Ray& operator=(Ray &p);
-	void setTriangle(Triangle t);
+	void setTriangle(const Triangle& t);
 private:
 	friend class Triangle;
 
 	Vertex ps, pe;
 	std::list<Vertex> vertex_list;
 	ColorDbl color{0,0,0};
-	Triangle* endPointTriangle = NULL;
+	const Triangle* endPointTriangle = NULL;
 };

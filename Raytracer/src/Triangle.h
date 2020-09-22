@@ -24,7 +24,6 @@ public:
 
 	Triangle& operator=(Triangle &p);
 
-
 	void calculateNormal();
 
 	ColorDbl getColor();

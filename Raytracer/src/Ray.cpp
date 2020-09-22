@@ -1,12 +1,13 @@
 #include "Ray.h"
 
 
-Ray::Ray(const Vertex& start, const Vertex& end) : ps{start}, pe{end}
+Ray::Ray(const Vertex& start, const Vertex& end) : ps{ start }, pe{ end }
 {
+
 	//vertex_list.push_back(start); //crashes dr memory
 	//vertex_list.push_back(end);
 }
-Ray::~Ray() 
+Ray::~Ray()
 {
 	vertex_list.clear();
 	delete endPointTriangle;
@@ -29,7 +30,7 @@ Ray& Ray::operator=(Ray &p)
 
 	return *this;
 }
-void Ray::setTriangle(Triangle t)
+void Ray::setTriangle(const Triangle& t)
 {
-	endPointTriangle = &t;
+	endPointTriangle = new Triangle(t);
 }
