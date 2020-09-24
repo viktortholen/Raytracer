@@ -16,7 +16,7 @@ public:
 	{
 		calculateNormal();
 	}
-	bool rayIntersection(Ray& ray);
+	bool rayIntersection(Ray& ray, float& t);
 
 	~Triangle() = default;
 

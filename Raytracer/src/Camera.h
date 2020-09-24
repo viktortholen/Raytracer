@@ -25,7 +25,8 @@ public:
 private:
 	const int width = 800;
 	const int height = 800;
-	
+	const float INFINITY_FLOAT = std::numeric_limits<float>::max();
+
 	Pixel** pixel_array = new Pixel* [height];
 	const Vertex e1{ -1,0,0 };
 	const Vertex e2{ -2,0,0 };
@@ -41,8 +42,9 @@ void Camera::render(const Scene& scene) {
 	float delta = static_cast<float>(2.0 / width);
 
 	float percentage;
+	
 
-	std::list<Triangle*> trianglelist = scene.getTriangleList();
+	std::list<Mesh*> meshlist = scene.getMeshList();
 
 	for (int i = 0; i < height; i++)
 	{
@@ -57,25 +59,28 @@ void Camera::render(const Scene& scene) {
 			float ry = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 			float rz = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 			Vertex pixelIntersection{ 0.0, (j - quad_size_y + ry)*delta, (i - quad_size_z + rz)*delta};
-
 			Ray ray{ e1, pixelIntersection};
-			
-			for (std::list<Triangle*>::iterator it = trianglelist.begin(); it != trianglelist.end(); it++)
+
+			float t_closest = INFINITY_FLOAT;
+			float t;
+
+			for (std::list<Mesh*>::iterator itm = meshlist.begin(); itm != meshlist.end(); itm++)
 			{
-				if ((*it)->rayIntersection(ray))//får tillbaka parametrar och sparar triangeln med lägst t
+				std::list<Triangle*> triangleList = (*itm)->getTriangleList();
+				for (std::list<Triangle*>::iterator it = triangleList.begin(); it != triangleList.end(); it++)
 				{
-					ColorDbl col = (*it)->getColor();
-					pixel_array[i][j].setColor(col);
-				}
-				else
-				{
-					ColorDbl black{ 0,0,0 };
-					pixel_array[i][j].setColor(black);
+					if ((*it)->rayIntersection(ray, t) && t < t_closest)
+					{
+						ray.setTriangle(**it);
+						t_closest = t;
+
+						ColorDbl col = (*it)->getColor();
+						pixel_array[i][j].setColor(col);
+					}
 
 				}
 			}
-			//gör det vi ska med triangeln som träffats
-		}
+		} 
 	}
 }
 void Camera::createImage()

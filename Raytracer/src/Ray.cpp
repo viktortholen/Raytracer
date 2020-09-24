@@ -10,7 +10,6 @@ Ray::Ray(const Vertex& start, const Vertex& end) : ps{ start }, pe{ end }
 Ray::~Ray()
 {
 	vertex_list.clear();
-	delete endPointTriangle;
 }
 Ray::Ray(const Ray& other)
 :ps{ other.ps }, pe{ pe }
@@ -30,7 +29,10 @@ Ray& Ray::operator=(Ray &p)
 
 	return *this;
 }
-void Ray::setTriangle(const Triangle& t)
+void Ray::setTriangle(Triangle& t)
 {
-	endPointTriangle = new Triangle(t);
+	endPointTriangle = &t;
+}
+Triangle* Ray::getTriangle(){
+	return endPointTriangle;
 }

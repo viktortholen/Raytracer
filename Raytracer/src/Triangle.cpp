@@ -2,7 +2,7 @@
 #include "Triangle.h"
 
 
-bool Triangle::rayIntersection(Ray& ray) {
+bool Triangle::rayIntersection(Ray& ray, float& t) {
 	const float EPSILON = 0.00001f;
 
 	Vertex T = ray.ps - v0;
@@ -11,7 +11,7 @@ bool Triangle::rayIntersection(Ray& ray) {
 	Vertex D = ray.pe - ray.ps;
 	Vertex P = D.crossProduct(E2);
 	Vertex Q = T.crossProduct(E1);
-
+	
 
 	float u = P.dotProduct(T) / P.dotProduct(E1);
 
@@ -26,13 +26,12 @@ bool Triangle::rayIntersection(Ray& ray) {
 	if (static_cast<float>(u + v) > 1)
 		return false;
 
-	float t = Q.dotProduct(E2) / P.dotProduct(E1);
+	t = Q.dotProduct(E2) / P.dotProduct(E1);
 	//std::cout << "\n "<<t << " " << u << " " << v;
 	if (t < EPSILON)
 	{
 		return false;
 	}
-	ray.setTriangle(*this); //save the triangle
 
 	return true;
 }
