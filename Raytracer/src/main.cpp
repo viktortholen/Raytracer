@@ -5,18 +5,18 @@ int main() {
 
 
 	//Classes/Structs:	Scene, Triangle, Ray, Direction, 
-	//					ColorDbl, Pixel, Camera, Vertex
+	//					ColorDbl, Pixel, Camera, Vec4
 
 	//Subclasses? :	Sphere, tetrahedral - contains Triangles
 	std::cout << "Hello world"<<std::endl;
 
-	//Vertex T = ray.ps - v0;
-	//Vertex E1 = v1 - v0;
-	//Vertex E2 = v2 - v0;
-	//Vertex D = ray.pe - ray.ps;
+	//Vec4 T = ray.ps - v0;
+	//Vec4 E1 = v1 - v0;
+	//Vec4 E2 = v2 - v0;
+	//Vec4 D = ray.pe - ray.ps;
 
-	//Vertex P = D.crossProduct(E2);
-	//Vertex Q = T.crossProduct(E1);
+	//Vec4 P = D.crossProduct(E2);
+	//Vec4 Q = T.crossProduct(E1);
 
 	//float u = P.dotProduct(T) / P.dotProduct(E1);
 

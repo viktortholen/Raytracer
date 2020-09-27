@@ -1,6 +1,6 @@
 #pragma once
 #include "Includer.h"
-#include "Vertex.h"
+#include "Vec4.h"
 #include "ColorDbl.h"
 
 #include "Triangle.h"
@@ -8,7 +8,7 @@ class Triangle; //forward declaration
 
 class Ray {
 public:
-	Ray(const Vertex& start, const Vertex& end);
+	Ray(const Vec4& start, const Vec4& end);
 
 	~Ray();
 
@@ -18,9 +18,9 @@ public:
 	Triangle* getTriangle();
 private:
 	friend class Triangle;
-
-	Vertex ps, pe;
-	std::list<Vertex> vertex_list;
+	friend class Sphere;
+	Vec4 ps, pe;
+	std::list<Vec4> vertex_list;
 	ColorDbl color{0,0,0};
 	Triangle* endPointTriangle = NULL;
 };

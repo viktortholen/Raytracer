@@ -5,12 +5,12 @@
 bool Triangle::rayIntersection(Ray& ray, float& t) {
 	const float EPSILON = 0.00001f;
 
-	Vertex T = ray.ps - v0;
-	Vertex E1 = v1 - v0;
-	Vertex E2 = v2 - v0;
-	Vertex D = ray.pe - ray.ps;
-	Vertex P = D.crossProduct(E2);
-	Vertex Q = T.crossProduct(E1);
+	Vec4 T = ray.ps - v0;
+	Vec4 E1 = v1 - v0;
+	Vec4 E2 = v2 - v0;
+	Vec4 D = ray.pe - ray.ps;
+	Vec4 P = D.crossProduct(E2);
+	Vec4 Q = T.crossProduct(E1);
 	
 
 	float u = P.dotProduct(T) / P.dotProduct(E1);
@@ -55,8 +55,8 @@ Triangle& Triangle::operator=(Triangle& p) { //assignment
 
 void Triangle::calculateNormal()
 {
-	Vertex U = v1 - v0;
-	Vertex V = v2 - v0;
+	Vec4 U = v1 - v0;
+	Vec4 V = v2 - v0;
 
 	glm::vec4 Uc = U.coords;
 	glm::vec4 Vc = V.coords;
@@ -69,7 +69,7 @@ void Triangle::calculateNormal()
 	//double Nx = (U.y * V.z) - (U.z * V.y);
 	//double Ny = (U.z * V.x) - (U.x * V.z);
 	//double Nz = (U.x * V.y) - (U.y * V.x);
-	normal = Direction{ Nx,Ny,Nz };
+	normal = Vec4{ Nx,Ny,Nz };
 }
 ColorDbl Triangle::getColor() {
 	return color;

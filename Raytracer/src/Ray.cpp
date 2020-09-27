@@ -1,7 +1,7 @@
 #include "Ray.h"
 
 
-Ray::Ray(const Vertex& start, const Vertex& end) : ps{ start }, pe{ end }
+Ray::Ray(const Vec4& start, const Vec4& end) : ps{ start }, pe{ end }
 {
 
 	//vertex_list.push_back(start); //crashes dr memory

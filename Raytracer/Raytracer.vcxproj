@@ -156,6 +156,7 @@
     <ClCompile Include="src\Triangle.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Material.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\ColorDbl.h" />
@@ -165,8 +166,9 @@
     <ClInclude Include="src\Pixel.h" />
     <ClInclude Include="src\Ray.h" />
     <ClInclude Include="src\Scene.h" />
+    <ClInclude Include="src\Sphere.h" />
     <ClInclude Include="src\Triangle.h" />
-    <ClInclude Include="src\Vertex.h" />
+    <ClInclude Include="src\Vec4.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

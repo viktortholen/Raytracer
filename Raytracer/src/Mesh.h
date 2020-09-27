@@ -2,10 +2,10 @@
 #include "Includer.h"
 #include "Object.h"
 #include "Triangle.h"
-
+#include "Material.h"
 class Mesh : public Object{
 public:
-	Mesh(){}
+	Mesh() {}
 	~Mesh()
 	{
 		for (std::list<Triangle*>::iterator it = triangleList.begin(); it != triangleList.end(); ++it) {

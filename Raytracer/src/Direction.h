@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Includer.h"
+#include "Vec4.h"
 
 class Direction {
 public:
@@ -10,6 +11,9 @@ public:
 	Direction(glm::vec3 vec)
 		:dir{ vec } {}
 	//assignment copy
+
+
 private:
 	glm::vec3 dir;
+
 };

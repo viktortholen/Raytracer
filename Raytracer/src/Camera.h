@@ -3,6 +3,7 @@
 #include "Pixel.h"
 #include "Ray.h"
 #include "Scene.h"
+#include "Object.h"
 #define LOG(x) std::cout << x;
 
 class Camera {
@@ -29,8 +30,8 @@ private:
 	const float INFINITY_FLOAT = std::numeric_limits<float>::max();
 
 	Pixel** pixel_array = new Pixel* [height];
-	const Vertex e1{ -1,0,0 };
-	const Vertex e2{ -2,0,0 };
+	const Vec4 e1{ -1,0,0 };
+	const Vec4 e2{ -2,0,0 };
 	bool eyePoint = 0;
 
 };
@@ -59,7 +60,7 @@ void Camera::render(const Scene& scene) {
 		{
 			float ry = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 			float rz = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-			Vertex pixelIntersection{ 0.0, (j - quad_size_y + ry)*delta, (i - quad_size_z + rz)*delta};
+			Vec4 pixelIntersection{ 0.0, (j - quad_size_y + ry)*delta, (i - quad_size_z + rz)*delta};
 			Ray ray{ e1, pixelIntersection};
 
 			float t_closest = INFINITY_FLOAT;
@@ -85,7 +86,7 @@ void Camera::createImage(std::string filename, std::string colorSpace)
 	
 	if (colorSpace == "LINEAR")
 	{
-		LOG("\nCreating image...\n");
+		LOG("\nCreating image... (LINEAR)\n");
 		//find i;
 
 		//For well lit image
@@ -120,6 +121,7 @@ void Camera::createImage(std::string filename, std::string colorSpace)
 	}
 	else if (colorSpace == "LOG")
 	{
+		LOG("\nCreating image... (LOG)\n");
 		ColorDbl** log_array = new ColorDbl*[height];
 		for (int i = 0; i < height; ++i) {
 			log_array[i] = new ColorDbl[width];

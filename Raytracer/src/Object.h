@@ -1,6 +1,7 @@
 #pragma once
-#include "Mesh.h"
-
+#include "Ray.h"
+#include "ColorDbl.h"
+#include "Material.h"
 class Object
 {
 public:
@@ -8,14 +9,6 @@ public:
 
 	virtual ~Object() = 0 {};
 	virtual bool castRay(Ray& ray, float& t, float& t_closest, ColorDbl& col) = 0;
-
 	//material properties:
-	struct Material {
-		enum Type
-		{
-			DIFFUSE, REFLECTIVE
-		};
-		//Lambertian properties i dont know...
-		int Kd;//?
-	};
+
 };
