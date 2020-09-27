@@ -10,5 +10,5 @@ public:
 		return color;
 	}
 private:
-	glm::vec3 color{0,0,0};
+	glm::vec3 color{0,0,0}; //background is black.
 };

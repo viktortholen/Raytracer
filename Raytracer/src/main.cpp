@@ -59,7 +59,7 @@ int main() {
 
 	Camera camera{};
 	camera.render(theScene);
-	camera.createImage();
+	camera.createImage("picture.ppm", "LOG");
 
 	return 0;
 }

@@ -2,7 +2,7 @@
 #include "Includer.h"
 #include "Pixel.h"
 #include "Ray.h"
-
+#include "Scene.h"
 #define LOG(x) std::cout << x;
 
 class Camera {
@@ -19,7 +19,8 @@ public:
 	}
 
 	void render(const Scene& scene);
-	void createImage();
+	void createImage(std::string filename, std::string colorSpace);
+	void openImage(std::string filename);
 
 
 private:
@@ -44,7 +45,7 @@ void Camera::render(const Scene& scene) {
 	float percentage;
 	
 
-	std::list<Mesh*> meshlist = scene.getMeshList();
+	std::list<Object*> objectList = scene.getObjectList();
 
 	for (int i = 0; i < height; i++)
 	{
@@ -63,43 +64,119 @@ void Camera::render(const Scene& scene) {
 
 			float t_closest = INFINITY_FLOAT;
 			float t;
-
-			for (std::list<Mesh*>::iterator itm = meshlist.begin(); itm != meshlist.end(); itm++)
+			ColorDbl col;
+			//loop through objects instead of meshes (includes spheres)
+			for (std::list<Object*>::iterator it = objectList.begin(); it != objectList.end(); it++)
 			{
-				std::list<Triangle*> triangleList = (*itm)->getTriangleList();
-				for (std::list<Triangle*>::iterator it = triangleList.begin(); it != triangleList.end(); it++)
+				if ((*it)->castRay(ray, t, t_closest, col)) //if the ray hits the object -> set the color depending on that object.
 				{
-					if ((*it)->rayIntersection(ray, t) && t < t_closest)
-					{
-						ray.setTriangle(**it);
-						t_closest = t;
-
-						ColorDbl col = (*it)->getColor();
-						pixel_array[i][j].setColor(col);
-					}
-
+					pixel_array[i][j].setColor(col);
 				}
 			}
 		} 
 	}
 }
-void Camera::createImage()
+void Camera::createImage(std::string filename, std::string colorSpace)
 {
-	std::ofstream img("picture.ppm");
+	std::ofstream img("../Renders/" + filename);
 	img << "P3" << std::endl;
 	img << width << " " << height << std::endl;
 	img << "255" << std::endl;
 	
-	LOG("\nCreating image...\n");
-
-	for (int i = height-1; i >= 0; i--)
+	if (colorSpace == "LINEAR")
 	{
-		for (int j = width-1; j >= 0; j--)
+		LOG("\nCreating image...\n");
+		//find i;
+
+		//For well lit image
+		double imax = 0;
+		for (int i = height - 1; i >= 0; i--)
 		{
-			glm::vec3 rgb = pixel_array[i][j].getColor();
-
-			img << rgb[0] << " " << rgb[1] << " " << rgb[2] << std::endl;
-
+			for (int j = width - 1; j >= 0; j--)
+			{
+				glm::vec3 rgb = pixel_array[i][j].getColor();
+				if (rgb[0] > imax)
+					imax = rgb[0];
+				if (rgb[1] > imax)
+					imax = rgb[1];
+				if (rgb[2] > imax)
+					imax = rgb[2];
+			}
 		}
+		//do this for both!
+		for (int i = height - 1; i >= 0; i--)
+		{
+			for (int j = width - 1; j >= 0; j--)
+			{
+				glm::vec3 rgb = pixel_array[i][j].getColor();
+				int r = static_cast<int>(rgb[0] * (255.99 / imax));
+				int g = static_cast<int>(rgb[1] * (255.99 / imax));
+				int b = static_cast<int>(rgb[2] * (255.99 / imax));
+				img << r << " " << g << " " << b << std::endl;
+
+			}
+		}
+		//***************
 	}
+	else if (colorSpace == "LOG")
+	{
+		ColorDbl** log_array = new ColorDbl*[height];
+		for (int i = 0; i < height; ++i) {
+			log_array[i] = new ColorDbl[width];
+		}
+
+		for (int i = height - 1; i >= 0; i--)
+		{
+			for (int j = width - 1; j >= 0; j--)
+			{
+				glm::vec3 rgb = pixel_array[i][j].getColor();
+				double sr = sqrt(rgb[0]);
+				double sg = sqrt(rgb[1]);
+				double sb = sqrt(rgb[2]);
+
+				log_array[i][j] = ColorDbl(sr, sg, sb);
+			}
+		}
+		double imax = 0;
+		for (int i = height - 1; i >= 0; i--)
+		{
+			for (int j = width - 1; j >= 0; j--)
+			{
+				glm::vec3 rgb = log_array[i][j].getColorVec();
+				if (rgb[0] > imax)
+					imax = rgb[0];
+				if (rgb[1] > imax)
+					imax = rgb[1];
+				if (rgb[2] > imax)
+					imax = rgb[2];
+			}
+		}
+		//do this for both!
+		for (int i = height - 1; i >= 0; i--)
+		{
+			for (int j = width - 1; j >= 0; j--)
+			{
+				glm::vec3 rgb = log_array[i][j].getColorVec();
+				int r = static_cast<int>(rgb[0] * (255.99 / imax));
+				int g = static_cast<int>(rgb[1] * (255.99 / imax));
+				int b = static_cast<int>(rgb[2] * (255.99 / imax));
+				img << r << " " << g << " " << b << std::endl;
+
+			}
+		}
+
+
+		//delete
+		for (int i = 0; i < height; i++)
+			delete[] log_array[i];
+		delete[] log_array;
+
+	}
+
+
+	
+}
+void Camera::openImage(std::string filename)
+{
+	//open the image in a window, how??
 }

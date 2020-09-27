@@ -7,20 +7,20 @@ public:
 	Scene() = default;
 	~Scene()
 	{
-		for (std::list<Mesh*>::iterator it = meshList.begin(); it != meshList.end(); ++it) {
+		for (std::list<Object*>::iterator it = objectList.begin(); it != objectList.end(); ++it) {
 			delete* it;
 		}
-		meshList.clear();
+		objectList.clear();
 	}
 	void createScene();
 	void createRoom();
-	std::list<Mesh*> getMeshList() const;
+	std::list<Object*> getObjectList() const;
 private:
-	std::list<Mesh*> meshList;
+	std::list<Object*> objectList;
 
 };
-std::list<Mesh*> Scene::getMeshList() const{
-	return meshList;
+std::list<Object*> Scene::getObjectList() const{
+	return objectList;
 }
 void Scene::createScene() {
 	//Tak
@@ -36,7 +36,7 @@ void Scene::createScene() {
 	tetra->addTriangleToMesh(new Triangle(Vertex(6.5, 0, 1), Vertex(6, 0.5, 0), Vertex(6, -0.5, 0), ColorDbl(255, 255, 200)));
 	tetra->addTriangleToMesh(new Triangle(Vertex(6.5, 0, 1), Vertex(7, 0, 0), Vertex(6, 0.5, 0), ColorDbl(255, 255, 200)));
 	tetra->addTriangleToMesh(new Triangle(Vertex(6.5, 0, 1), Vertex(6, -0.5, 0), Vertex(7, 0, 0), ColorDbl(255, 255, 200)));
-	meshList.push_back(tetra);
+	objectList.push_back(tetra);
 	//Tetrahedral
 	
 	//createTetrahedral();
@@ -82,6 +82,6 @@ void Scene::createRoom()
 	room->addTriangleToMesh(new Triangle(Vertex(0, -6, 5), Vertex(0, -6, -5), Vertex(-3, 0, -5), ColorDbl(128,0,255)));
 	room->addTriangleToMesh(new Triangle(Vertex(0, -6, 5), Vertex(-3, 0, -5), Vertex(-3, 0, 5), ColorDbl(128,0,255)));
 
-	meshList.push_back(room);
+	objectList.push_back(room);
 	
 }
