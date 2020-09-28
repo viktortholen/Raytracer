@@ -10,7 +10,7 @@ public:
 		:r{ _r }, center{ _center }, material{m}{}
 	~Sphere() = default;
 
-	virtual bool castRay(Ray& ray, float& t, float& t_closest, ColorDbl& col) override
+	virtual bool castRay(Ray& ray, float&, float& t_closest, ColorDbl& col) override
 	{
 
 		Vec4 o = ray.ps;
@@ -48,6 +48,5 @@ public:
 private:
 	float r; //radius
 	Vec4 center; //center
-
 	Material material;
 };

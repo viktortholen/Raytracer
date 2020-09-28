@@ -9,6 +9,9 @@ public:
 	glm::vec3 getColorVec() {
 		return color;
 	}
+	ColorDbl operator+=(const ColorDbl& c) {
+		return ColorDbl(color.r + c.color.r, color.g + c.color.g, color.b + c.color.b);
+	}
 private:
 	glm::vec3 color{0,0,0}; //background is black.
 };

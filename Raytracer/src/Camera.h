@@ -4,6 +4,7 @@
 #include "Ray.h"
 #include "Scene.h"
 #include "Object.h"
+#include "Light.h"
 #define LOG(x) std::cout << x;
 
 class Camera {
@@ -22,7 +23,7 @@ public:
 	void render(const Scene& scene);
 	void createImage(std::string filename, std::string colorSpace);
 	void openImage(std::string filename);
-
+	ColorDbl tracePath(std::list<Object*> &objectList, std::list<Light*> &lightList, Ray& ray);
 
 private:
 	const int width = 800;
@@ -47,6 +48,7 @@ void Camera::render(const Scene& scene) {
 	
 
 	std::list<Object*> objectList = scene.getObjectList();
+	std::list<Light*> lightList = scene.getLightList();
 
 	for (int i = 0; i < height; i++)
 	{
@@ -60,22 +62,52 @@ void Camera::render(const Scene& scene) {
 		{
 			float ry = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 			float rz = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-			Vec4 pixelIntersection{ 0.0, (j - quad_size_y + ry)*delta, (i - quad_size_z + rz)*delta};
-			Ray ray{ e1, pixelIntersection};
-
-			float t_closest = INFINITY_FLOAT;
-			float t;
-			ColorDbl col;
-			//loop through objects instead of meshes (includes spheres)
-			for (std::list<Object*>::iterator it = objectList.begin(); it != objectList.end(); it++)
-			{
-				if ((*it)->castRay(ray, t, t_closest, col)) //if the ray hits the object -> set the color depending on that object.
-				{
-					pixel_array[i][j].setColor(col);
-				}
-			}
+			Vec4 pixelIntersection{ 0.0, (j - quad_size_y + ry) * delta, (i - quad_size_z + rz) * delta };
+			Ray ray{ e1, pixelIntersection };
+			ColorDbl col = tracePath(objectList, lightList, ray);
+			pixel_array[i][j].setColor(col);
 		} 
 	}
+}
+ColorDbl Camera::tracePath(std::list<Object*> &objectList, std::list<Light*> &lightList, Ray& ray)
+{
+	float t_closest = INFINITY_FLOAT;
+	float t;
+	ColorDbl col;
+	//loop through objects instead of meshes (includes spheres)
+	for (std::list<Object*>::iterator it = objectList.begin(); it != objectList.end(); it++)
+	{
+		if ((*it)->castRay(ray, t, t_closest, col)) //object is hit
+		{
+			Object* hitObject = (*it);
+			//Do everthing here
+
+
+		}
+	}
+
+	return col;
+	//Material m = o->getMaterial();
+
+
+	//switch (m.type)
+	//{
+	//	case( MaterialType::DIFFUSE_LAMBERTIAN):
+	//	{
+
+	//	}
+	//	case(MaterialType::REFLECTIVE_LAMBERTIAN):
+	//	{
+
+	//	}
+	//}
+
+	//if (m.Ks == 0) {
+	//	return m.diff_col;
+	//}
+	//return col;
+
+
 }
 void Camera::createImage(std::string filename, std::string colorSpace)
 {

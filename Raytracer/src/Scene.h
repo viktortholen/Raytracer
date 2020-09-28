@@ -6,6 +6,7 @@
 #include "Sphere.h"
 #include "Material.h"
 #include "Vec4.h"
+#include "Light.h"
 class Scene {
 public:
 	Scene() = default;
@@ -24,23 +25,30 @@ public:
 	void createCube(const Vec4& p, const float& size, const Material& m);
 
 	std::list<Object*> getObjectList() const;
+	std::list<Light*> getLightList() const;
 private:
 	std::list<Object*> objectList;
+	std::list<Light*> lightList;
 
 };
 std::list<Object*> Scene::getObjectList() const{
 	return objectList;
 }
+std::list<Light*> Scene::getLightList() const{
+	return lightList;
+}
 void Scene::createScene() {
 	//Tak
 	createRoom();
 
-	Material diff_mat{ MaterialType::DIFFUSE, ColorDbl(245,52,12) };
+	Material diff_mat{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(245,52,12) };
 
 	createTetra(Vec4(6,0,-2), 2.0f, diff_mat);
 	createCube(Vec4(6,-2,-1), 1.0f, diff_mat);
 	createSphere(Vec4(6, 1, 1), 1.5f, diff_mat);
 
+	Light* areaLight = new Light(Vec4(6,0,4.5), 1.0f);
+	lightList.push_back(areaLight);
 
 }
 void Scene::createTetra(const Vec4& p, const float& size, const Material& m)

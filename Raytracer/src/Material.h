@@ -1,7 +1,7 @@
 #pragma once
-enum MaterialType
+enum class MaterialType
 {
-	DIFFUSE, REFLECTIVE
+	DIFFUSE_LAMBERTIAN, REFLECTIVE_LAMBERTIAN
 };
 struct Material {
 	//Lambertian properties i dont know...
@@ -10,12 +10,13 @@ struct Material {
 		:type{ _type }, diff_col{ col }{}
 	Material()
 	{
-		type = MaterialType::DIFFUSE;
+		type = MaterialType::DIFFUSE_LAMBERTIAN;
 		diff_col = ColorDbl(0, 0, 0);
 	}
 
 	MaterialType type;
 	int Kd;//?
+	float Ks;
 	ColorDbl diff_col;
-
+	ColorDbl BRDF;
 };
