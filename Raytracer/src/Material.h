@@ -19,4 +19,5 @@ struct Material {
 	float Ks;
 	ColorDbl diff_col;
 	ColorDbl BRDF;
+	float reflectance;
 };

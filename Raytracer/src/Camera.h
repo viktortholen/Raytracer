@@ -24,11 +24,13 @@ public:
 	void createImage(std::string filename, std::string colorSpace);
 	void openImage(std::string filename);
 	ColorDbl tracePath(std::list<Object*> &objectList, std::list<Light*> &lightList, Ray& ray);
+	bool objectIntersect(std::list<Object*>& objectList, std::list<Light*>& lightList, Ray& ray, Object*& hitObject, float& t_closest);
 
 private:
 	const int width = 800;
 	const int height = 800;
 	const float INFINITY_FLOAT = std::numeric_limits<float>::max();
+	float angleIntensity;
 
 	Pixel** pixel_array = new Pixel* [height];
 	const Vec4 e1{ -1,0,0 };
@@ -63,49 +65,91 @@ void Camera::render(const Scene& scene) {
 			float ry = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 			float rz = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 			Vec4 pixelIntersection{ 0.0, (j - quad_size_y + ry) * delta, (i - quad_size_z + rz) * delta };
-			Ray ray{ e1, pixelIntersection };
+			Vec4 dir = pixelIntersection - e1;
+			Ray ray{ e1, dir.normalize() };
 			ColorDbl col = tracePath(objectList, lightList, ray);
 			pixel_array[i][j].setColor(col);
 		} 
 	}
 }
-ColorDbl Camera::tracePath(std::list<Object*> &objectList, std::list<Light*> &lightList, Ray& ray)
+bool Camera::objectIntersect(std::list<Object*>& objectList, std::list<Light*>& lightList, Ray& ray, Object*& hitObject, float &t_closest)
 {
-	float t_closest = INFINITY_FLOAT;
+
 	float t;
-	ColorDbl col;
-	//loop through objects instead of meshes (includes spheres)
 	for (std::list<Object*>::iterator it = objectList.begin(); it != objectList.end(); it++)
 	{
-		if ((*it)->castRay(ray, t, t_closest, col)) //object is hit
+		if ((*it)->castRay(ray, t, t_closest)) //object is hit
 		{
-			Object* hitObject = (*it);
-			//Do everthing here
-
-
+			hitObject = (*it);
 		}
 	}
+	if (hitObject == nullptr)
+		return false;
+	return true;
+}
+ColorDbl Camera::tracePath(std::list<Object*> &objectList, std::list<Light*> &lightList, Ray& ray)
+{
+	ColorDbl col;
+	Object* hitObject = nullptr;
+	//loop through objects instead of meshes (includes spheres)
+	float t_temp = INFINITY_FLOAT;
+	if (objectIntersect(objectList, lightList, ray, hitObject, t_temp))
+	{
+		//Do everthing here
+
+		Material hitMat = hitObject->getMaterial();
+
+		Vec4 hitPoint = ray.pe;
+
+		Vec4 dir = ray.getDirection().normalize();
+		//Vec4 norm_hit = ray.getTriangle()->getNormal().normalize(); //change to object normal to include spheres
+		Vec4 norm_hit = ray.getHitNormal().normalize(); //change to object normal to include spheres
+		Vec4 refl_dir = dir.reflect(norm_hit).normalize();
+
+		
+
+		switch (hitMat.type)
+		{
+			case(MaterialType::REFLECTIVE_LAMBERTIAN): //perfect mirror
+			{
+
+
+				//trace new ray in the reflection direction:
+				Ray refl_ray{ hitPoint, refl_dir };
+
+				col = tracePath(objectList, lightList, refl_ray);
+				break;
+
+			}
+			case(MaterialType::DIFFUSE_LAMBERTIAN): //
+			{
+				float radiance = 0.0f;
+				//loop through lights
+				for (std::list<Light*>::iterator lights = lightList.begin(); lights != lightList.end(); lights++)
+				{
+					Vec4 lightDir = (*lights)->getPosition() - hitPoint;
+					Ray shadow_ray{ hitPoint, lightDir.normalize() };
+					
+					float angleIntensity = lightDir.normalize().dotProduct(norm_hit);
+					float lightDistance = lightDir.dotProduct(lightDir);
+
+					Object* shadowObject = nullptr;
+					float t_shadow = INFINITY_FLOAT;
+					if (!objectIntersect(objectList, lightList, shadow_ray, shadowObject, t_shadow) || t_shadow * t_shadow > lightDistance)
+					{
+						radiance += (*lights)->getIntensity() * angleIntensity;
+					}
+				}
+				
+				col = hitMat.diff_col * radiance;
+				//col.printCoords();
+				break;
+			}
+		}
+	}
+	
 
 	return col;
-	//Material m = o->getMaterial();
-
-
-	//switch (m.type)
-	//{
-	//	case( MaterialType::DIFFUSE_LAMBERTIAN):
-	//	{
-
-	//	}
-	//	case(MaterialType::REFLECTIVE_LAMBERTIAN):
-	//	{
-
-	//	}
-	//}
-
-	//if (m.Ks == 0) {
-	//	return m.diff_col;
-	//}
-	//return col;
 
 
 }

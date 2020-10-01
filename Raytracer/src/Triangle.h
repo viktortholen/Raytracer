@@ -26,6 +26,11 @@ public:
 
 	void calculateNormal();
 
+	Vec4 getNormal()
+	{
+		return normal;
+	}
+
 	ColorDbl getColor();
 
 private:

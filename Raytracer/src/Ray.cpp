@@ -1,21 +1,16 @@
 #include "Ray.h"
 
 
-Ray::Ray(const Vec4& start, const Vec4& end) : ps{ start }, pe{ end }
+Ray::Ray(const Vec4& start, const Vec4& _dir) 
+	: ps{ start }, dir{_dir}
 {
-
-	//vertex_list.push_back(start); //crashes dr memory
-	//vertex_list.push_back(end);
 }
 Ray::~Ray()
 {
-	vertex_list.clear();
 }
 Ray::Ray(const Ray& other)
 :ps{ other.ps }, pe{ pe }
 { //copy
-
-	vertex_list = other.vertex_list;
 	color = other.color;
 }
 Ray& Ray::operator=(Ray &p) 
@@ -24,7 +19,6 @@ Ray& Ray::operator=(Ray &p)
 	std::swap(p.ps, ps);
 	std::swap(p.pe, pe);
 	std::swap(p.color, color);
-	std::swap(p.vertex_list, vertex_list);
 	std::swap(p.endPointTriangle, endPointTriangle);
 
 	return *this;

@@ -18,7 +18,7 @@ public:
 		objectList.clear();
 	}
 	void createScene();
-	void createRoom();
+	void createRoom(const Material& m);
 
 	void createTetra(const Vec4& p, const float& size, const Material& m);
 	void createSphere(const Vec4& p, const float& size, const Material& m);
@@ -38,22 +38,23 @@ std::list<Light*> Scene::getLightList() const{
 	return lightList;
 }
 void Scene::createScene() {
-	//Tak
-	createRoom();
-
 	Material diff_mat{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(245,52,12) };
+	Material refl_mat{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(0,250,12) };
 
-	createTetra(Vec4(6,0,-2), 2.0f, diff_mat);
-	createCube(Vec4(6,-2,-1), 1.0f, diff_mat);
-	createSphere(Vec4(6, 1, 1), 1.5f, diff_mat);
+	//Tak
+	createRoom(diff_mat);
 
-	Light* areaLight = new Light(Vec4(6,0,4.5), 1.0f);
-	lightList.push_back(areaLight);
+	createTetra(Vec4(6,0,-2), 2.0f, refl_mat);
+	createCube(Vec4(6,-2,-2), 2.0f, refl_mat);
+	createSphere(Vec4(6, 1, 1), 2.5f, refl_mat);
+
+	Light* light = new Light(Vec4(5,0,4.9f), 1.0f);
+	lightList.push_back(light);
 
 }
 void Scene::createTetra(const Vec4& p, const float& size, const Material& m)
 {
-	Mesh* tetra = new Mesh();
+	Mesh* tetra = new Mesh(m);
 	//Botten
 	tetra->addTriangleToMesh(new Triangle(Vec4(p.coords[0]-size/2, p.coords[1]+size/2, p.coords[2]-size/2), Vec4(p.coords[0]+size/2, p.coords[1], p.coords[2]-size/2), Vec4(p.coords[0]-size/2, p.coords[1]-size/2, p.coords[2]-size/2), ColorDbl(255, 255, 200)));
 	//Mot kameran
@@ -69,7 +70,7 @@ void Scene::createSphere(const Vec4& p, const float& size, const Material& m)
 }
 void Scene::createCube(const Vec4& p, const float& size, const Material& m)
 {
-	Mesh* cube = new Mesh();
+	Mesh* cube = new Mesh(m);
 
 	Vec4 v0(p.coords[0]-size / 2, p.coords[1]-size / 2, p.coords[2]-size / 2);
 	Vec4 v1(p.coords[0]-size / 2, p.coords[1]+size / 2, p.coords[2]-size / 2);
@@ -101,9 +102,9 @@ void Scene::createCube(const Vec4& p, const float& size, const Material& m)
 
 	objectList.push_back(cube);
 }
-void Scene::createRoom()
+void Scene::createRoom(const Material &m)
 {
-	Mesh* room = new Mesh();
+	Mesh* room = new Mesh(m);
 	room->addTriangleToMesh(new Triangle(Vec4(5, 0, 5), Vec4(-3, 0, 5), Vec4(0, 6, 5), ColorDbl(255,0,0)));
 	room->addTriangleToMesh(new Triangle(Vec4(5, 0, 5), Vec4(0, 6, 5), Vec4(10, 6, 5), ColorDbl(255, 0, 0)));
 	room->addTriangleToMesh(new Triangle(Vec4(5, 0, 5), Vec4(10, 6, 5), Vec4(13, 0, 5), ColorDbl(255,0,0)));
@@ -121,7 +122,7 @@ void Scene::createRoom()
 	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(0, -6, -5), Vec4(10, -6, -5), ColorDbl(0,255,0)));
 	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(-3, 0, -5), Vec4(0, -6, -5), ColorDbl(0,255,0)));
 				 
-	//Vägg Upp	 
+	//Vägg Upp
 	room->addTriangleToMesh(new Triangle(Vec4(0, 6, 5), Vec4(0, 6, -5), Vec4(10, 6, -5), ColorDbl(0,255,255)));
 	room->addTriangleToMesh(new Triangle(Vec4(0, 6, 5), Vec4(10, 6, -5), Vec4(10, 6, 5), ColorDbl(0,255,255)));
 	//Vägg Upp Hö

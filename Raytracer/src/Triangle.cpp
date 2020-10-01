@@ -5,10 +5,12 @@
 bool Triangle::rayIntersection(Ray& ray, float& t) {
 	const float EPSILON = 0.00001f;
 
+
 	Vec4 T = ray.ps - v0;
 	Vec4 E1 = v1 - v0;
 	Vec4 E2 = v2 - v0;
-	Vec4 D = ray.pe - ray.ps;
+	//Vec4 D = ray.pe - ray.ps;
+	Vec4 D = ray.dir;
 	Vec4 P = D.crossProduct(E2);
 	Vec4 Q = T.crossProduct(E1);
 	
@@ -32,7 +34,9 @@ bool Triangle::rayIntersection(Ray& ray, float& t) {
 	{
 		return false;
 	}
-
+	ray.pe = ray.ps + (t * ray.dir); //set the endpoint
+	ray.setTriangle(*this);
+	ray.hitNormal = ray.endPointTriangle->getNormal();
 	return true;
 }
 Triangle::Triangle(const Triangle& other)

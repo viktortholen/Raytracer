@@ -33,6 +33,13 @@ public:
 		tmp.coords[2] -= v;
 		return tmp;
 	}
+	Vec4 operator+(const Vec4& v) const {
+		Vec4 tmp{ *this };
+		tmp.coords[0] += v.coords[0];
+		tmp.coords[1] += v.coords[1];
+		tmp.coords[2] += v.coords[2];
+		return tmp;
+	}
 	Vec4 operator*(const float& f)
 	{
 		coords[0] *= f;
@@ -53,8 +60,13 @@ public:
 	}
 	friend Vec4 operator- (const float& r, const Vec4& v)
 	{
-		return Vec4(v.coords[0] - r, v.coords[1] * r, v.coords[2] * r, v.coords[3]);
+		return Vec4(v.coords[0] - r, v.coords[1] - r, v.coords[2] - r, v.coords[3]);
 	}
+	//friend Vec4 operator+ (const Vec4& v1, const Vec4& v2)
+	//{
+	//	return Vec4(v1.coords[0] + v2.coords[0], v1.coords[1] + v2.coords[1], v1.coords[2] + v2.coords[2], v1.coords[3] + v2.coords[3]);
+	//}
+
 
 	Vec4 crossProduct(const Vec4& v) const
 	{
@@ -76,13 +88,15 @@ public:
 		tmp = glm::normalize(tmp);
 		return Vec4{ tmp[0], tmp[1] ,tmp[2], coords[3]};
 	}
+	Vec4 reflect(const Vec4& N) //direction and normal
+	{
+		Vec4 dir{*this};
+		return dir - 2 * dir.dotProduct(N) * N;
+	}
+
 private:
 	glm::vec4 coords;
 	friend class Triangle;
 	friend class Scene;
 
 };
-//Vec4 operator*(float f, const Vec4& v)
-//{
-//	return f * v;
-//}
