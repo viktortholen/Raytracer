@@ -10,7 +10,7 @@ public:
 		:r{ _r }, center{ _center }, material{m}{}
 	~Sphere() = default;
 
-	virtual bool castRay(Ray& ray, float&, float& t_closest) override
+	virtual bool castRay(Ray& ray, float& t_closest) override
 	{
 
 		Vec4 o = ray.ps;

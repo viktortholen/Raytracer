@@ -13,7 +13,7 @@ public:
 
 	Ray(const Ray& other);
 	Ray& operator=(Ray &p);
-	void setTriangle(Triangle& t);
+	void setTriangle(Triangle* t);
 	Triangle* getTriangle();
 	Vec4 getDirection()
 	{
@@ -27,6 +27,7 @@ private:
 	friend class Triangle;
 	friend class Sphere;
 	friend class Camera;
+	friend class Mesh;
 	Vec4 ps, pe;
 	//std::list<Vec4> vertex_list;
 	ColorDbl color{0,0,0};

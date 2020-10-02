@@ -29,8 +29,8 @@ public:
 private:
 	const int width = 800;
 	const int height = 800;
+	const float EPSILON = 0.00001f;
 	const float INFINITY_FLOAT = std::numeric_limits<float>::max();
-	float angleIntensity;
 
 	Pixel** pixel_array = new Pixel* [height];
 	const Vec4 e1{ -1,0,0 };
@@ -74,17 +74,19 @@ void Camera::render(const Scene& scene) {
 }
 bool Camera::objectIntersect(std::list<Object*>& objectList, std::list<Light*>& lightList, Ray& ray, Object*& hitObject, float &t_closest)
 {
-
-	float t;
+	hitObject = nullptr;
+	float obj_closest = INFINITY_FLOAT;
 	for (std::list<Object*>::iterator it = objectList.begin(); it != objectList.end(); it++)
 	{
-		if ((*it)->castRay(ray, t, t_closest)) //object is hit
+		if ((*it)->castRay(ray, t_closest) && t_closest < obj_closest) //object is hit
 		{
 			hitObject = (*it);
+			obj_closest = t_closest;
 		}
 	}
-	if (hitObject == nullptr)
+	if (hitObject == nullptr )
 		return false;
+
 	return true;
 }
 ColorDbl Camera::tracePath(std::list<Object*> &objectList, std::list<Light*> &lightList, Ray& ray)
@@ -99,15 +101,12 @@ ColorDbl Camera::tracePath(std::list<Object*> &objectList, std::list<Light*> &li
 
 		Material hitMat = hitObject->getMaterial();
 
-		Vec4 hitPoint = ray.pe;
-
 		Vec4 dir = ray.getDirection().normalize();
 		//Vec4 norm_hit = ray.getTriangle()->getNormal().normalize(); //change to object normal to include spheres
 		Vec4 norm_hit = ray.getHitNormal().normalize(); //change to object normal to include spheres
 		Vec4 refl_dir = dir.reflect(norm_hit).normalize();
 
-		
-
+		Vec4 hitPoint = ray.pe + (EPSILON * norm_hit);
 		switch (hitMat.type)
 		{
 			case(MaterialType::REFLECTIVE_LAMBERTIAN): //perfect mirror
@@ -130,19 +129,36 @@ ColorDbl Camera::tracePath(std::list<Object*> &objectList, std::list<Light*> &li
 					Vec4 lightDir = (*lights)->getPosition() - hitPoint;
 					Ray shadow_ray{ hitPoint, lightDir.normalize() };
 					
-					float angleIntensity = lightDir.normalize().dotProduct(norm_hit);
+					float angleIntensity = std::max(0.f, lightDir.normalize().dotProduct(norm_hit));
+
 					float lightDistance = lightDir.dotProduct(lightDir);
 
 					Object* shadowObject = nullptr;
 					float t_shadow = INFINITY_FLOAT;
-					if (!objectIntersect(objectList, lightList, shadow_ray, shadowObject, t_shadow) || t_shadow * t_shadow > lightDistance)
+					
+					//norm_hit.printCoords();
+					//check normal of object compared with shadowray direction and rule out if its impossible to hit.
+					bool canHit = (norm_hit.dotProduct(lightDir.normalize()) > EPSILON);
+					if (canHit)
 					{
-						radiance += (*lights)->getIntensity() * angleIntensity;
+						//if object is not in shadow -> calculate radiance from the point.
+						if (!(objectIntersect(objectList, lightList, shadow_ray, shadowObject, t_shadow) &&  t_shadow * t_shadow < lightDistance))
+						{
+							//std::cout << t_shadow;
+							radiance += (*lights)->getIntensity() * angleIntensity;
+						}
+						//col = ColorDbl(255, 255, 255);
 					}
+					else {
+						//col = ColorDbl(50, 50, 50);
+						//norm_hit.printCoords(); //wrong normals!
+						//lightDir.normalize().printCoords(); //correct
+					}
+
 				}
-				
+				//std::cout << radiance<<std::endl;
+				//col = ray.endPointTriangle->getColor();
 				col = hitMat.diff_col * radiance;
-				//col.printCoords();
 				break;
 			}
 		}

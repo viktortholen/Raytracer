@@ -8,7 +8,7 @@ public:
 	Object() {};
 
 	virtual ~Object() = 0 {};
-	virtual bool castRay(Ray& ray, float& t, float& t_closest) = 0;
+	virtual bool castRay(Ray& ray, float& t_closest) = 0;
 	//material properties:
 	virtual Material getMaterial() const = 0;
 

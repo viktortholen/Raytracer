@@ -19,18 +19,19 @@ public:
 	{
 		return triangleList;
 	}
-	virtual bool castRay(Ray &ray, float &t, float &t_closest) override
+	virtual bool castRay(Ray &ray, float &t_closest) override
 	{
+		float t;
 		bool hit = false;
 		for (std::list<Triangle*>::iterator it = triangleList.begin(); it != triangleList.end(); it++)
 		{
 			if ((*it)->rayIntersection(ray, t) && t < t_closest)
 			{
 				hit = true;
-				
+				ray.setTriangle(*it);
+				ray.pe = ray.ps + (t * ray.dir); //set the endpoint
 				t_closest = t;
-
-				//col = (*it)->getColor();
+				ray.hitNormal =(*it)->getNormal();
 			}
 			
 		}

@@ -41,14 +41,15 @@ void Scene::createScene() {
 	Material diff_mat{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(245,52,12) };
 	Material refl_mat{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(0,250,12) };
 
-	//Tak
+
+	createTetra(Vec4(6, 0, -2), 2.0f, refl_mat);
+	createCube(Vec4(6, -2, -2), 2.0f, refl_mat);
 	createRoom(diff_mat);
 
-	createTetra(Vec4(6,0,-2), 2.0f, refl_mat);
-	createCube(Vec4(6,-2,-2), 2.0f, refl_mat);
-	createSphere(Vec4(6, 1, 1), 2.5f, refl_mat);
 
-	Light* light = new Light(Vec4(5,0,4.9f), 1.0f);
+	//createSphere(Vec4(6, 1, 1), 2.5f, refl_mat);
+
+	Light* light = new Light(Vec4(5,0,3), 1.0f);
 	lightList.push_back(light);
 
 }
@@ -56,11 +57,11 @@ void Scene::createTetra(const Vec4& p, const float& size, const Material& m)
 {
 	Mesh* tetra = new Mesh(m);
 	//Botten
-	tetra->addTriangleToMesh(new Triangle(Vec4(p.coords[0]-size/2, p.coords[1]+size/2, p.coords[2]-size/2), Vec4(p.coords[0]+size/2, p.coords[1], p.coords[2]-size/2), Vec4(p.coords[0]-size/2, p.coords[1]-size/2, p.coords[2]-size/2), ColorDbl(255, 255, 200)));
+	tetra->addTriangleToMesh(new Triangle(Vec4(p.coords[0]-size/2, p.coords[1]+size/2, p.coords[2]-size/2), Vec4(p.coords[0]+size/2, p.coords[1], p.coords[2]-size/2), Vec4(p.coords[0]-size/2, p.coords[1]-size/2, p.coords[2]-size/2), ColorDbl(0, 0, 200)));
 	//Mot kameran
-	tetra->addTriangleToMesh(new Triangle(Vec4(p.coords[0], p.coords[1], p.coords[2]+size/2), Vec4(p.coords[0]-size/2, p.coords[1]+size/2, p.coords[2]-size/2), Vec4(p.coords[0]-size/2, p.coords[1]-size/2, p.coords[2]-size/2), ColorDbl(255, 255, 200)));
-	tetra->addTriangleToMesh(new Triangle(Vec4(p.coords[0], p.coords[1], p.coords[2]+size/2), Vec4(p.coords[0]-size/2, p.coords[1]-size/2, p.coords[2]-size/2), Vec4(p.coords[0]+size/2, p.coords[1], p.coords[2]-size/2), ColorDbl(255, 255, 200)));
-	tetra->addTriangleToMesh(new Triangle(Vec4(p.coords[0], p.coords[1], p.coords[2]+size/2), Vec4(p.coords[0]+size/2, p.coords[1], p.coords[2]-size/2), Vec4(p.coords[0]-size/2, p.coords[1]+size/2, p.coords[2]-size/2), ColorDbl(255, 255, 200)));
+	tetra->addTriangleToMesh(new Triangle(Vec4(p.coords[0], p.coords[1], p.coords[2]+size/2), Vec4(p.coords[0]-size/2, p.coords[1]+size/2, p.coords[2]-size/2), Vec4(p.coords[0]-size/2, p.coords[1]-size/2, p.coords[2]-size/2), ColorDbl(255, 0, 0)));
+	tetra->addTriangleToMesh(new Triangle(Vec4(p.coords[0], p.coords[1], p.coords[2]+size/2), Vec4(p.coords[0]-size/2, p.coords[1]-size/2, p.coords[2]-size/2), Vec4(p.coords[0]+size/2, p.coords[1], p.coords[2]-size/2), ColorDbl(50, 50, 70)));
+	tetra->addTriangleToMesh(new Triangle(Vec4(p.coords[0], p.coords[1], p.coords[2]+size/2), Vec4(p.coords[0]+size/2, p.coords[1], p.coords[2]-size/2), Vec4(p.coords[0]-size/2, p.coords[1]+size/2, p.coords[2]-size/2), ColorDbl(0, 255, 200)));
 	objectList.push_back(tetra);
 }
 void Scene::createSphere(const Vec4& p, const float& size, const Material& m)
@@ -82,23 +83,23 @@ void Scene::createCube(const Vec4& p, const float& size, const Material& m)
 	Vec4 v6(p.coords[0]+size / 2, p.coords[1]+size / 2, p.coords[2]+size / 2);
 	Vec4 v7(p.coords[0]+size / 2, p.coords[1]-size / 2, p.coords[2]+size / 2);
 	//Botten
-	cube->addTriangleToMesh(new Triangle(v0, v1, v3, ColorDbl(255, 255, 200)));
-	cube->addTriangleToMesh(new Triangle(v1, v2, v3, ColorDbl(255, 255, 200)));
+	cube->addTriangleToMesh(new Triangle(v0, v1, v3, ColorDbl(0, 255, 0)));
+	cube->addTriangleToMesh(new Triangle(v1, v2, v3, ColorDbl(0, 255, 0)));
 	//Toppen
-	cube->addTriangleToMesh(new Triangle(v4, v7, v6, ColorDbl(255, 255, 200)));
-	cube->addTriangleToMesh(new Triangle(v5, v4, v6, ColorDbl(255, 255, 200)));
+	cube->addTriangleToMesh(new Triangle(v4, v7, v6, ColorDbl(255, 0, 0)));
+	cube->addTriangleToMesh(new Triangle(v4, v6, v5, ColorDbl(255, 0, 0)));
 	//front
-	cube->addTriangleToMesh(new Triangle(v1, v0, v4, ColorDbl(255, 255, 200)));
-	cube->addTriangleToMesh(new Triangle(v1,v4,v5, ColorDbl(255, 255, 200)));
+	cube->addTriangleToMesh(new Triangle(v1, v4, v5, ColorDbl(0, 0, 200)));
+	cube->addTriangleToMesh(new Triangle(v1, v0, v4, ColorDbl(0, 0, 200)));
 	//Back
-	cube->addTriangleToMesh(new Triangle(v7,v3, v2, ColorDbl(255, 255, 200)));
-	cube->addTriangleToMesh(new Triangle(v2,v6,v7, ColorDbl(255, 255, 200)));
+	cube->addTriangleToMesh(new Triangle(v7, v3, v2, ColorDbl(0, 255, 200)));
+	cube->addTriangleToMesh(new Triangle(v2, v6, v7, ColorDbl(0, 255, 200)));
 	//Left
-	cube->addTriangleToMesh(new Triangle(v1,v5,v6, ColorDbl(255, 255, 200)));
-	cube->addTriangleToMesh(new Triangle(v1,v6,v2, ColorDbl(255, 255, 200)));
+	cube->addTriangleToMesh(new Triangle(v1, v5, v6, ColorDbl(255, 0, 200)));
+	cube->addTriangleToMesh(new Triangle(v1, v6, v2, ColorDbl(255, 0, 200)));
 	//Right
-	cube->addTriangleToMesh(new Triangle(v7,v4,v0, ColorDbl(255, 255, 200)));
-	cube->addTriangleToMesh(new Triangle(v7,v0,v3, ColorDbl(255, 255, 200)));
+	cube->addTriangleToMesh(new Triangle(v7, v4, v0, ColorDbl(255, 255, 0)));
+	cube->addTriangleToMesh(new Triangle(v7, v0, v3, ColorDbl(255, 255, 0)));
 
 	objectList.push_back(cube);
 }

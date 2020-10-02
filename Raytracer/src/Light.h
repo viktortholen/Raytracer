@@ -17,8 +17,7 @@ public:
 private:
 
 	//int samples;
-
-	ColorDbl emit_color;
+	ColorDbl emit_color{ 255,255,255 };
 	float intensity = 1.0f;
 	float d; //size
 	Vec4 position;

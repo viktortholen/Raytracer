@@ -34,9 +34,10 @@ bool Triangle::rayIntersection(Ray& ray, float& t) {
 	{
 		return false;
 	}
-	ray.pe = ray.ps + (t * ray.dir); //set the endpoint
-	ray.setTriangle(*this);
-	ray.hitNormal = ray.endPointTriangle->getNormal();
+
+	
+	
+
 	return true;
 }
 Triangle::Triangle(const Triangle& other)

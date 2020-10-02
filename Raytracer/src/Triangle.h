@@ -10,7 +10,9 @@ class Ray; //forward declaration
 
 class Triangle {
 public:
-	Triangle() = default;
+	Triangle() {
+		calculateNormal();
+	}
 	Triangle(const Vec4& _v0, const Vec4& _v1, const Vec4& _v2, const ColorDbl& _color)
 		:v0{ _v0 }, v1{ _v1 }, v2{ _v2 }, color{_color}
 	{

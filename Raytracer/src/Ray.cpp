@@ -23,9 +23,9 @@ Ray& Ray::operator=(Ray &p)
 
 	return *this;
 }
-void Ray::setTriangle(Triangle& t)
+void Ray::setTriangle(Triangle* t)
 {
-	endPointTriangle = &t;
+	endPointTriangle = t;
 }
 Triangle* Ray::getTriangle(){
 	return endPointTriangle;
