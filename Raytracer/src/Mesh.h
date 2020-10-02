@@ -29,9 +29,9 @@ public:
 			{
 				hit = true;
 				ray.setTriangle(*it);
-				ray.pe = ray.ps + (t * ray.dir); //set the endpoint
+				ray.pe = ray.ps + (t * ray.dir.normalize()); //set the endpoint
 				t_closest = t;
-				ray.hitNormal =(*it)->getNormal();
+				ray.hitNormal =(*it)->getNormal().normalize();
 			}
 			
 		}

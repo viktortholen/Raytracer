@@ -39,7 +39,7 @@ std::list<Light*> Scene::getLightList() const{
 }
 void Scene::createScene() {
 	Material diff_mat{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(245,52,12) };
-	Material refl_mat{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(0,250,12) };
+	Material refl_mat{ MaterialType::REFLECTIVE_LAMBERTIAN, ColorDbl(0,250,12) };
 
 
 	createTetra(Vec4(6, 0, -2), 2.0f, refl_mat);
@@ -47,7 +47,7 @@ void Scene::createScene() {
 	createRoom(diff_mat);
 
 
-	createSphere(Vec4(6, 3, -3.5), 1, diff_mat);
+	createSphere(Vec4(6, 3, -3), 1, refl_mat);
 
 	Light* light = new Light(Vec4(5,0,3), 1.0f);
 	lightList.push_back(light);

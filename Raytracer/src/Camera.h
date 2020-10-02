@@ -129,35 +129,24 @@ ColorDbl Camera::tracePath(std::list<Object*> &objectList, std::list<Light*> &li
 					Vec4 lightDir = (*lights)->getPosition() - hitPoint;
 					Ray shadow_ray{ hitPoint, lightDir.normalize() };
 					
-					float angleIntensity = std::max(0.f, lightDir.normalize().dotProduct(norm_hit));
+					float angleIntensity =lightDir.normalize().dotProduct(norm_hit);
 
 					float lightDistance = lightDir.dotProduct(lightDir);
 
 					Object* shadowObject = nullptr;
 					float t_shadow = INFINITY_FLOAT;
 					
-					//norm_hit.printCoords();
 					//check normal of object compared with shadowray direction and rule out if its impossible to hit.
-					bool canHit = (norm_hit.dotProduct(lightDir.normalize()) > EPSILON);
-					if (canHit)
+					
+					if (angleIntensity > EPSILON)
 					{
 						//if object is not in shadow -> calculate radiance from the point.
 						if (!(objectIntersect(objectList, lightList, shadow_ray, shadowObject, t_shadow) &&  t_shadow * t_shadow < lightDistance))
 						{
-							//std::cout << t_shadow;
 							radiance += (*lights)->getIntensity() * angleIntensity;
 						}
-						//col = ColorDbl(255, 255, 255);
 					}
-					else {
-						//col = ColorDbl(50, 50, 50);
-						//norm_hit.printCoords(); //wrong normals!
-						//lightDir.normalize().printCoords(); //correct
-					}
-
 				}
-				//std::cout << radiance<<std::endl;
-				//col = ray.endPointTriangle->getColor();
 				col = hitMat.diff_col * radiance;
 				break;
 			}

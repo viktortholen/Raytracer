@@ -19,7 +19,7 @@ public:
 		float a = I.dotProduct(I);
 		float b = 2.0f * I.dotProduct(o - center);
 		float c = (o - center).dotProduct(o - center) - pow(r,2);
-		float discriminant = b * b - 4 * a * c;
+		float discriminant = b * b - (4 * a * c);
 		float d1 = (-b / 2) - sqrt(pow(b / 2, 2) - (a * c));
 		float d2 = (-b / 2) + sqrt(pow(b / 2, 2) - (a * c));
 
@@ -33,16 +33,17 @@ public:
 		{
 			return false;
 		}
-		if (d1 < t_closest)
+		if (d1 > t_closest)
 		{
-			t_closest = d1;
-			//col = material.diff_col;
+			return false;
 		}
 		//std::cout << "d1: " << d1 << ", d2: " << d2 << std::endl;
 		//set the normal direction of the ray hit.
-		
+		t_closest = d1;
 		ray.pe = ray.ps + (d1 * ray.dir.normalize()); //set the endpoint
-		ray.hitNormal = (d1 - center);
+		ray.hitNormal = (ray.pe - center).normalize();
+		//found the problem! d1 is float, center is vec4!!!!
+		//ray.hitNormal.printCoords();
 		return true;
 	}
 	Material getMaterial() const override

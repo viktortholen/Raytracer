@@ -58,14 +58,6 @@ public:
 	{
 		return Vec4(v.coords[0] * r, v.coords[1] * r, v.coords[2] * r, v.coords[3]);
 	}
-	friend Vec4 operator- (const float& r, const Vec4& v)
-	{
-		return Vec4(v.coords[0] - r, v.coords[1] - r, v.coords[2] - r, v.coords[3]);
-	}
-	//friend Vec4 operator+ (const Vec4& v1, const Vec4& v2)
-	//{
-	//	return Vec4(v1.coords[0] + v2.coords[0], v1.coords[1] + v2.coords[1], v1.coords[2] + v2.coords[2], v1.coords[3] + v2.coords[3]);
-	//}
 
 
 	Vec4 crossProduct(const Vec4& v) const
