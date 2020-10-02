@@ -41,7 +41,7 @@ public:
 		//std::cout << "d1: " << d1 << ", d2: " << d2 << std::endl;
 		//set the normal direction of the ray hit.
 		
-		ray.pe = ray.ps + (d1 * (ray.pe - ray.ps)); //set the endpoint
+		ray.pe = ray.ps + (d1 * ray.dir.normalize()); //set the endpoint
 		ray.hitNormal = (d1 - center);
 		return true;
 	}

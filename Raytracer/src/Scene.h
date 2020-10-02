@@ -47,7 +47,7 @@ void Scene::createScene() {
 	createRoom(diff_mat);
 
 
-	//createSphere(Vec4(6, 1, 1), 2.5f, refl_mat);
+	createSphere(Vec4(6, 3, -3.5), 1, diff_mat);
 
 	Light* light = new Light(Vec4(5,0,3), 1.0f);
 	lightList.push_back(light);
@@ -66,7 +66,7 @@ void Scene::createTetra(const Vec4& p, const float& size, const Material& m)
 }
 void Scene::createSphere(const Vec4& p, const float& size, const Material& m)
 {
-	Sphere* sphere = new Sphere(0.4f, p, m);
+	Sphere* sphere = new Sphere(size, p, m);
 	objectList.push_back(sphere);
 }
 void Scene::createCube(const Vec4& p, const float& size, const Material& m)
