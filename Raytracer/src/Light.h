@@ -14,6 +14,9 @@ public:
 	{
 		return intensity;
 	}
+
+	
+
 private:
 
 	//int samples;

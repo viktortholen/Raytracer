@@ -15,9 +15,9 @@ public:
 	void render(const Scene& scene);
 	void createImage(std::string filename, std::string colorSpace);
 	void openImage(std::string filename);
-	ColorDbl tracePath(std::list<Object*> &objectList, std::list<Light*> &lightList, Ray& ray);
+	ColorDbl tracePath(std::list<Object*> &objectList, std::list<Light*> &lightList, Ray& ray, int depth);
 	bool objectIntersect(std::list<Object*>& objectList, Ray& ray, Object*& hitObject, float& t_closest);
-	Vec4 calcRandomHemiDir(const Vec4& N);
+	Vec4 calcRandomHemiDir(const float& r_phi, const float& r_theta);
 private:
 	const int width = 800;
 	const int height = 800;

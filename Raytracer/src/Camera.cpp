@@ -40,12 +40,12 @@ void Camera::render(const Scene& scene) {
 			Vec4 pixelIntersection{ 0.0, (j - quad_size_y + ry) * delta, (i - quad_size_z + rz) * delta };
 			Vec4 dir = pixelIntersection - e1;
 			Ray ray{ e1, dir.normalize() };
-			ColorDbl col = tracePath(objectList, lightList, ray);
+			ColorDbl col = tracePath(objectList, lightList, ray, 0);
 			pixel_array[i][j].setColor(col);
 		}
 	}
 }
-Vec4 Camera::calcRandomHemiDir(const Vec4& N)//send in r1 & r2 too
+Vec4 Camera::calcRandomHemiDir(const float &r_phi,const float &r_theta)
 {
 
 
@@ -72,8 +72,9 @@ bool Camera::objectIntersect(std::list<Object*>& objectList, Ray& ray, Object*& 
 
 	return true;
 }
-ColorDbl Camera::tracePath(std::list<Object*>& objectList, std::list<Light*>& lightList, Ray& ray)
+ColorDbl Camera::tracePath(std::list<Object*>& objectList, std::list<Light*>& lightList, Ray& ray, int depth)	//RAYDEPTH ÄR INTE BRA
 {
+	std::cout << "depth: " << depth << std::endl;
 	ColorDbl col;
 	Object* hitObject = nullptr;
 	//loop through objects instead of meshes (includes spheres)
@@ -95,73 +96,114 @@ ColorDbl Camera::tracePath(std::list<Object*>& objectList, std::list<Light*>& li
 
 		switch (hitMat.type)
 		{
-		case(MaterialType::REFLECTIVE_LAMBERTIAN): //perfect mirror
-		{
-
-
-			//trace new ray in the reflection direction:
-			Ray refl_ray{ hitPoint, refl_dir };
-
-			col = tracePath(objectList, lightList, refl_ray);
-			break;
-
-		}
-		case(MaterialType::DIFFUSE_LAMBERTIAN): //
-		{
-			float radiance = 0.0f;
-			//Direct lighting:
-			for (std::list<Light*>::iterator lights = lightList.begin(); lights != lightList.end(); lights++)
+			case(MaterialType::REFLECTIVE_LAMBERTIAN): //perfect mirror
 			{
-				Vec4 lightDir = (*lights)->getPosition() - hitPoint;
-				Ray shadow_ray{ hitPoint, lightDir.normalize() };
 
-				float angleIntensity = lightDir.normalize().dotProduct(norm_hit);
 
-				float lightDistance = lightDir.dotProduct(lightDir);
+				//trace new ray in the reflection direction:
+				Ray refl_ray{ hitPoint, refl_dir };
 
-				Object* shadowObject = nullptr;
-				float t_shadow = INFINITY_FLOAT;
-				/*
-				TODO: 
-					change the direct lighting to use area lights instead of point.
-				*/
-				//check normal of object compared with shadowray direction and rule out if its impossible to hit.
-				if (angleIntensity > EPSILON)
-				{
-					//if object is not in shadow -> calculate radiance from the point.
-					if (!(objectIntersect(objectList, shadow_ray, shadowObject, t_shadow) && t_shadow * t_shadow < lightDistance))
-					{
-						radiance += (*lights)->getIntensity() * angleIntensity;
+				col = tracePath(objectList, lightList, refl_ray, depth + 1);
+				break;
 
-					}
-				}
 			}
-			/*
-				TODO: reflective diffuse
-				radiance is the direct lighting here
+			case(MaterialType::DIFFUSE_LAMBERTIAN): //
+			{
+				float radiance = 0.0f;
+				ColorDbl indirect_col;
+				int areaLightSamples = 3;
 
-				loop and calculate indirect light (GI)
-				loop how many times? (how many rays to cast through the hemisphere)
+				//Direct lighting:
+				for (std::list<Light*>::iterator lights = lightList.begin(); lights != lightList.end(); lights++)
+				{
 
-				sum the direct and indirect light at the end
-				lastly divide by pdf
-			*/
-			//Monte Carlo things:
-			
+					//skapa lista med samplecoordinater i lightclassen här?
 
-			//local coordinate system directions for hitpoint:
-			//Vec4 X = Vec4(norm_hit.coords[2], 0.0f, -norm_hit.coords[0]).normalize();
-			//Vec4 Y = norm_hit.crossProduct(X);
-			//Vec4 Z = norm_hit;
+					//Gå igenom alla samples från ljuskällan och räkna rays enskilt från dem
+					//for (int i = 0; i < areaLightSamples; i++) {
 
-			//Vec4 refl_dir = calcRandomHemiDir(X,Y,Z); //change to montecarlo reflection 
-			//***********************
-			col = hitMat.diff_col * radiance;
+					Vec4 lightDir = (*lights)->getPosition() - hitPoint;
+					Ray shadow_ray{ hitPoint, lightDir.normalize() };
+
+					float angleIntensity = lightDir.normalize().dotProduct(norm_hit);
+
+					float lightDistance = lightDir.dotProduct(lightDir);
+
+					Object* shadowObject = nullptr;
+					float t_shadow = INFINITY_FLOAT;
+					/*
+					TODO:
+						change the direct lighting to use area lights instead of point.
+					*/
+					//check normal of object compared with shadowray direction and rule out if its impossible to hit.
+					if (angleIntensity > EPSILON)
+					{
+						//if object is not in shadow -> calculate radiance from the point.
+						if (!(objectIntersect(objectList, shadow_ray, shadowObject, t_shadow) && t_shadow * t_shadow < lightDistance))
+						{
+							radiance += (*lights)->getIntensity() * angleIntensity;
+
+						}
+					}
+				
+				}
+				/*
+					TODO: reflective diffuse
+					radiance is the direct lighting here
+
+					loop and calculate indirect light (GI)
+					loop how many times? (how many rays to cast through the hemisphere)
+
+					sum the direct and indirect light at the end
+					lastly divide by pdf
+				*/
+				//Monte Carlo things: (INDIRECT LIGHT)
+				//TODO: Terminate if T > 1-alpha
+				float T = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+				
+				
+				if (T < 1 - hitMat.absorption)
+				{
 
 
-			break;
+					//local coordinate system directions for hitpoint:
+					Vec4 X = Vec4(norm_hit.coords[2], 0.0f, -norm_hit.coords[0]).normalize();
+					Vec4 Y = norm_hit.crossProduct(X);
+					Vec4 Z = norm_hit;
+					const float PDF = 1 / (2 * M_PI);
+
+
+					std::random_device rd;  //Will be used to obtain a seed for the random number engine
+					std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+					std::uniform_real_distribution<float> dis(0.0, 1.0);
+					int N = 4;
+					for (int i = 0; i < N; i++)
+					{
+						float r_phi = dis(gen) * 2 * M_PI;
+						float r_theta = acos(1 - 2 * dis(gen));
+
+						Vec4 randHemiDir = { sinf(r_phi) * sinf(r_theta), sinf(r_phi) * cosf(r_theta), sinf(r_theta) };
+
+						//transform to world coords
+						float x = randHemiDir.coords[0] * X.coords[0] + randHemiDir.coords[1] * Y.coords[0] + randHemiDir.coords[2] * Z.coords[0];
+						float y = randHemiDir.coords[0] * X.coords[1] + randHemiDir.coords[1] * Y.coords[1] + randHemiDir.coords[2] * Z.coords[1];
+						float z = randHemiDir.coords[0] * X.coords[2] + randHemiDir.coords[1] * Y.coords[2] + randHemiDir.coords[2] * Z.coords[2];
+						//trace path
+						Vec4 M = { x,y,z,1 };
+						Ray indirect_ray = { hitPoint, M };
+						indirect_col += tracePath(objectList, lightList, indirect_ray, depth + 1) ;
+					}
+
+					//Vec4 refl_dir = calcRandomHemiDir(X,Y,Z); //change to montecarlo reflection 
+					//***********************
+				}
+
+				col = hitMat.diff_col * radiance + indirect_col;
+				//col = indirect_col;
+			break;	
+			}
 		}
-		}
+		
 	}
 
 
