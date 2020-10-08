@@ -27,6 +27,18 @@ void Ray::setTriangle(Triangle* t)
 {
 	endPointTriangle = t;
 }
+void Ray::setHitNormal(const Vec4& n)
+{
+	hitNormal = n;
+}
+void Ray::setEndPoint(const float &t)
+{
+	pe = ps + (t * dir.normalize());
+}
 Triangle* Ray::getTriangle(){
 	return endPointTriangle;
+}
+Vec4 Ray::getOffsetEndPointAlongNormal(const float& amount)
+{
+	return pe + (amount * hitNormal);
 }

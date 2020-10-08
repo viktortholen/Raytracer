@@ -14,6 +14,9 @@ public:
 	Ray(const Ray& other);
 	Ray& operator=(Ray &p);
 	void setTriangle(Triangle* t);
+	void setHitNormal(const Vec4& n);
+	void setEndPoint(const float& t);
+	Vec4 getOffsetEndPointAlongNormal(const float& amount);
 	Triangle* getTriangle();
 	Vec4 getDirection()
 	{
@@ -23,13 +26,17 @@ public:
 	{
 		return hitNormal;
 	}
-private:
-	friend class Triangle;
-	friend class Sphere;
-	friend class Camera;
-	friend class Mesh;
+	Vec4 getStartPoint()
+	{
+		return ps;
+	}
+	Vec4 getEndPoint()
+	{
+		return pe;
+	}
+protected:
+
 	Vec4 ps, pe;
-	//std::list<Vec4> vertex_list;
 	ColorDbl color{0,0,0};
 	Triangle* endPointTriangle = NULL;
 	Vec4 dir;

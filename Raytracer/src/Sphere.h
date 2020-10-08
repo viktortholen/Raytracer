@@ -12,10 +12,9 @@ public:
 
 	virtual bool castRay(Ray& ray, float& t_closest) override
 	{
-
-		Vec4 o = ray.ps;
+		Vec4 o = ray.getStartPoint();
 		//Vec4 I = (ray.pe - ray.ps).normalize(); //direction
-		Vec4 I = ray.dir; //direction
+		Vec4 I = ray.getDirection(); //direction
 		float a = I.dotProduct(I);
 		float b = 2.0f * I.dotProduct(o - center);
 		float c = (o - center).dotProduct(o - center) - pow(r,2);
@@ -40,8 +39,10 @@ public:
 		//std::cout << "d1: " << d1 << ", d2: " << d2 << std::endl;
 		//set the normal direction of the ray hit.
 		t_closest = d1;
-		ray.pe = ray.ps + (d1 * ray.dir.normalize()); //set the endpoint
-		ray.hitNormal = (ray.pe - center).normalize();
+		ray.setEndPoint(d1);
+		ray.setHitNormal((ray.getEndPoint() - center).normalize());
+		//ray.pe = ray.ps + (d1 * ray.dir.normalize()); //set the endpoint
+		//ray.hitNormal = (ray.pe - center).normalize();
 		//found the problem! d1 is float, center is vec4!!!!
 		//ray.hitNormal.printCoords();
 		return true;
