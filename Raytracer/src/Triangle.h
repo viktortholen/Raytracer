@@ -22,9 +22,9 @@ public:
 
 	~Triangle() = default;
 
-	Triangle(const Triangle& other);
+	//Triangle(const Triangle& other);
 
-	Triangle& operator=(Triangle &p);
+	//Triangle& operator=(const Triangle &p);
 
 	void calculateNormal();
 

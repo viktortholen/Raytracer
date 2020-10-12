@@ -9,12 +9,29 @@ public:
 	glm::vec3 getColorVec() {
 		return color;
 	}
+	ColorDbl(const ColorDbl &other)
+	{ //copy
+		color = other.color;
+	}
+	ColorDbl& operator=(const ColorDbl& c)
+	{
+		ColorDbl tmp{ c };
+		std::swap(tmp.color, color);
+		return *this;
+	}
 
 	ColorDbl operator*(const float& t) {
 		ColorDbl tmp{ *this };
 		tmp.color[0] *= t;
 		tmp.color[1] *= t;
 		tmp.color[2] *= t;
+		return tmp;
+	}
+	ColorDbl operator*(const ColorDbl& c) {
+		ColorDbl tmp{ *this };
+		tmp.color[0] *= c.color[0];
+		tmp.color[1] *= c.color[1];
+		tmp.color[2] *= c.color[2];
 		return tmp;
 	}
 	ColorDbl operator+=(const ColorDbl& c) {
@@ -26,13 +43,20 @@ public:
 	}
 	ColorDbl operator+(const ColorDbl& c) {
 		ColorDbl tmp{ *this };
-		return tmp += c;
+		return (tmp += c);
 	}	
 	ColorDbl operator/(const float& t) {
 		ColorDbl tmp{ *this };
 		tmp.color[0] /= t;
 		tmp.color[1] /= t;
 		tmp.color[2] /= t;
+		return tmp;
+	}
+	ColorDbl operator/(const int& i) {
+		ColorDbl tmp{ *this };
+		tmp.color[0] /= i;
+		tmp.color[1] /= i;
+		tmp.color[2] /= i;
 		return tmp;
 	}
 	void printCoords()

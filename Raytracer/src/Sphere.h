@@ -36,15 +36,15 @@ public:
 		{
 			return false;
 		}
-		//std::cout << "d1: " << d1 << ", d2: " << d2 << std::endl;
-		//set the normal direction of the ray hit.
+
+
 		t_closest = d1;
-		ray.setEndPoint(d1);
-		ray.setHitNormal((ray.getEndPoint() - center).normalize());
-		//ray.pe = ray.ps + (d1 * ray.dir.normalize()); //set the endpoint
-		//ray.hitNormal = (ray.pe - center).normalize();
-		//found the problem! d1 is float, center is vec4!!!!
-		//ray.hitNormal.printCoords();
+
+		ray.setHitPropertiesSphere(center ,material.diff_col, d1);
+		//ray.setEndPoint(d1);
+		//ray.setHitNormal((ray.getEndPoint() - center).normalize());
+		//ray.setColor(material.diff_col);
+
 		return true;
 	}
 	Material getMaterial() const override

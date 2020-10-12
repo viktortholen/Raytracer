@@ -36,23 +36,24 @@ bool Triangle::rayIntersection(Ray& ray, float& t) {
 	}
 	return true;
 }
-Triangle::Triangle(const Triangle& other)
-{
-	v0 = other.v0;
-	v1 = other.v1;
-	v2 = other.v2;
-	normal = other.normal;
-	color = other.color;
-}
+//Triangle::Triangle(const Triangle& other)
+//{
+//	v0 = other.v0;
+//	v1 = other.v1;
+//	v2 = other.v2;
+//	normal = other.normal;
+//	color = other.color;
+//}
 
-Triangle& Triangle::operator=(Triangle& p) { //assignment
-	std::swap(p.color, color);
-	std::swap(p.v0, v0);
-	std::swap(p.v1, v1);
-	std::swap(p.v2, v2);
-	std::swap(p.normal, normal);
-	return *this;
-}
+//Triangle& Triangle::operator=(const Triangle& p) { //assignment
+//	Triangle tmp{ *this };
+//	std::swap(tmp.color, color);
+//	std::swap(tmp.v0, v0);
+//	std::swap(tmp.v1, v1);
+//	std::swap(tmp.v2, v2);
+//	std::swap(tmp.normal, normal);
+//	return *this;
+//}
 
 void Triangle::calculateNormal()
 {

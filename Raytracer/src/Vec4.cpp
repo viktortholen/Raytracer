@@ -4,9 +4,9 @@
 Vec4::Vec4(const Vec4& other) {
 	coords = other.coords;
 }
-Vec4& Vec4::operator=(Vec4 p) { //assignment
-	Vec4 temp{ p };
-	std::swap(p.coords, coords);
+Vec4& Vec4::operator=(const Vec4 &p) { //assignment
+	Vec4 tmp{ p };
+	std::swap(tmp.coords, coords);
 	return *this;
 }
 

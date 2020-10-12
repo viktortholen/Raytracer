@@ -2,6 +2,7 @@
 #include "Camera.h"
 
 Camera::Camera() {
+	pixel_array = new Pixel*[height];
 	for (int i = 0; i < height; ++i) {
 		pixel_array[i] = new Pixel[width];
 	}
@@ -20,10 +21,12 @@ void Camera::render(const Scene& scene) {
 	float delta = static_cast<float>(2.0 / width);
 
 	float percentage;
-
-
+	int samples = 10;
+	
 	std::list<Object*> objectList = scene.getObjectList();
 	std::list<Light*> lightList = scene.getLightList();
+
+	std::vector<std::future<ColorDbl>> future_vec;
 
 	for (int i = 0; i < height; i++)
 	{
@@ -40,21 +43,29 @@ void Camera::render(const Scene& scene) {
 			Vec4 pixelIntersection{ 0.0, (j - quad_size_y + ry) * delta, (i - quad_size_z + rz) * delta };
 			Vec4 dir = pixelIntersection - e1;
 			Ray ray{ e1, dir.normalize() };
-			ColorDbl col = tracePath(objectList, lightList, ray, 0);
+			ColorDbl col;
+			#define INDIRECT
+			for  (int k = 0; k < samples; k++)
+			{
+				col = col + tracePath(objectList, lightList, ray);
+				//future_vec.push_back(std::async(std::launch::async, &Camera::renderSample, &objectList, &lightList, &ray, &samples));
+			}
+			
+			col = col / samples;
 			pixel_array[i][j].setColor(col);
 		}
 	}
 }
-Vec4 Camera::calcRandomHemiDir(const float &r_phi,const float &r_theta)
-{
-
-
-	//1. get random destibution floats
-	//2. use the floats to transform back to world coords
-	//3. return the direction
-
-	return Vec4(1, 2, 3, 4);
-}
+//ColorDbl Camera::renderSample(std::list<Object*>* objectList, std::list<Light*>* lightList, Ray* ray, unsigned int* samples)
+//{
+//	ColorDbl col;
+//	for  (unsigned int k = 0; k < *samples; k++)
+//	{
+//		col = col + tracePath(*objectList, *lightList, *ray);
+//	}
+//	col = col / static_cast<int>(*samples);
+//	//pixel_array[*i][*j].setColor(col);
+//}
 bool Camera::objectIntersect(std::list<Object*>& objectList, Ray& ray, Object*& hitObject, float& t_closest)
 {
 	hitObject = nullptr;
@@ -72,115 +83,110 @@ bool Camera::objectIntersect(std::list<Object*>& objectList, Ray& ray, Object*& 
 
 	return true;
 }
-ColorDbl Camera::tracePath(std::list<Object*>& objectList, std::list<Light*>& lightList, Ray& ray, int depth)	//RAYDEPTH ÄR INTE BRA
+ColorDbl Camera::tracePath(std::list<Object*>& objectList, std::list<Light*>& lightList, Ray& ray)	//RAYDEPTH ÄR INTE BRA
 {
-	std::cout << "depth: " << depth << std::endl;
-	ColorDbl col;
-	Object* hitObject = nullptr;
-	//loop through objects instead of meshes (includes spheres)
-	float t_temp = INFINITY_FLOAT;
-	if (objectIntersect(objectList, ray, hitObject, t_temp))
-	{
-		//Do everthing here
-
-		Material hitMat = hitObject->getMaterial();
-
-		Vec4 dir = ray.getDirection().normalize();
-		Vec4 norm_hit = ray.getHitNormal().normalize();
-
-		Vec4 refl_dir = dir.reflect(norm_hit).normalize(); //perfect reflection (whitted)
-		
-
-
-		Vec4 hitPoint = ray.getOffsetEndPointAlongNormal(EPSILON);
-
-		switch (hitMat.type)
+	//LOG("depth: " << depth <<std::endl)
+	//if (depth < 10) {
+		ColorDbl col;
+		Object* hitObject = nullptr;
+		//loop through objects instead of meshes (includes spheres)
+		float t_temp = INFINITY_FLOAT;
+		if (objectIntersect(objectList, ray, hitObject, t_temp))
 		{
-			case(MaterialType::REFLECTIVE_LAMBERTIAN): //perfect mirror
+			//Do everthing here
+
+			Material hitMat = hitObject->getMaterial();
+			ColorDbl hitColor = ray.getColor();
+			Vec4 dir = ray.getDirection().normalize();
+			Vec4 norm_hit = ray.getHitNormal().normalize();
+
+			Vec4 hitPoint = ray.getOffsetEndPointAlongNormal(EPSILON);
+			float T = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+			if (T < 1 - hitMat.absorption)
 			{
-
-
-				//trace new ray in the reflection direction:
-				Ray refl_ray{ hitPoint, refl_dir };
-
-				col = tracePath(objectList, lightList, refl_ray, depth + 1);
-				break;
-
-			}
-			case(MaterialType::DIFFUSE_LAMBERTIAN): //
-			{
-				float radiance = 0.0f;
-				ColorDbl indirect_col;
-				int areaLightSamples = 3;
-
-				//Direct lighting:
-				for (std::list<Light*>::iterator lights = lightList.begin(); lights != lightList.end(); lights++)
+				switch (hitMat.type)
+				{
+				case(MaterialType::REFLECTIVE_LAMBERTIAN): //perfect mirror
 				{
 
-					//skapa lista med samplecoordinater i lightclassen här?
+					Vec4 refl_dir = dir.reflect(norm_hit).normalize(); //perfect reflection (whitted)
+					//trace new ray in the reflection direction:
+					Ray refl_ray{ hitPoint, refl_dir };
 
-					//Gå igenom alla samples från ljuskällan och räkna rays enskilt från dem
-					//for (int i = 0; i < areaLightSamples; i++) {
+					col = tracePath(objectList, lightList, refl_ray);
+					break;
 
-					Vec4 lightDir = (*lights)->getPosition() - hitPoint;
-					Ray shadow_ray{ hitPoint, lightDir.normalize() };
-
-					float angleIntensity = lightDir.normalize().dotProduct(norm_hit);
-
-					float lightDistance = lightDir.dotProduct(lightDir);
-
-					Object* shadowObject = nullptr;
-					float t_shadow = INFINITY_FLOAT;
-					/*
-					TODO:
-						change the direct lighting to use area lights instead of point.
-					*/
-					//check normal of object compared with shadowray direction and rule out if its impossible to hit.
-					if (angleIntensity > EPSILON)
-					{
-						//if object is not in shadow -> calculate radiance from the point.
-						if (!(objectIntersect(objectList, shadow_ray, shadowObject, t_shadow) && t_shadow * t_shadow < lightDistance))
-						{
-							radiance += (*lights)->getIntensity() * angleIntensity;
-
-						}
-					}
-				
 				}
-				/*
-					TODO: reflective diffuse
-					radiance is the direct lighting here
-
-					loop and calculate indirect light (GI)
-					loop how many times? (how many rays to cast through the hemisphere)
-
-					sum the direct and indirect light at the end
-					lastly divide by pdf
-				*/
-				//Monte Carlo things: (INDIRECT LIGHT)
-				//TODO: Terminate if T > 1-alpha
-				float T = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-				
-				
-				if (T < 1 - hitMat.absorption)
+				case(MaterialType::DIFFUSE_LAMBERTIAN): //
 				{
+					float radiance = 0.0f;
+					ColorDbl indirect_col;
+					int areaLightSamples = 3;
 
+					//Direct lighting:
+					for (std::list<Light*>::iterator lights = lightList.begin(); lights != lightList.end(); lights++)
+					{
+
+						//skapa lista med samplecoordinater i lightclassen här?
+
+						//Gå igenom alla samples från ljuskällan och räkna rays enskilt från dem
+						//for (int i = 0; i < areaLightSamples; i++) {
+
+						Vec4 lightDir = (*lights)->getPosition() - hitPoint;
+						Ray shadow_ray{ hitPoint, lightDir.normalize() };
+
+						float angleIntensity = lightDir.normalize().dotProduct(norm_hit);
+
+						float lightDistance = lightDir.dotProduct(lightDir);
+
+						Object* shadowObject = nullptr;
+						float t_shadow = INFINITY_FLOAT;
+						/*
+						TODO:
+							change the direct lighting to use area lights instead of point.
+						*/
+						//check normal of object compared with shadowray direction and rule out if its impossible to hit.
+						if (angleIntensity > EPSILON)
+						{
+							//if object is not in shadow -> calculate radiance from the point.
+							if (!(objectIntersect(objectList, shadow_ray, shadowObject, t_shadow) && t_shadow * t_shadow < lightDistance))
+							{
+								radiance += (*lights)->getIntensity() * angleIntensity;
+
+							}
+						}
+
+					}
+					//Monte Carlo things: (INDIRECT LIGHT)
+					
+					#ifdef INDIRECT
 
 					//local coordinate system directions for hitpoint:
-					Vec4 X = Vec4(norm_hit.coords[2], 0.0f, -norm_hit.coords[0]).normalize();
-					Vec4 Y = norm_hit.crossProduct(X);
+					Vec4 Y;
+					if (fabs(norm_hit.coords[0] > fabs(norm_hit.coords[1])))
+					{
+						Y = Vec4(norm_hit.coords[2], 0.0f, -norm_hit.coords[0]).normalize();
+					}
+					else
+					{
+						Y = Vec4(0.0, -norm_hit.coords[2], norm_hit.coords[1]).normalize();
+					}
+					Vec4 X = norm_hit.crossProduct(X);
 					Vec4 Z = norm_hit;
-					const float PDF = 1 / (2 * M_PI);
 
-
+					const float PDF = 1 / (2.0f * static_cast<float>(M_PI));
 					std::random_device rd;  //Will be used to obtain a seed for the random number engine
 					std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
 					std::uniform_real_distribution<float> dis(0.0, 1.0);
-					int N = 4;
-					for (int i = 0; i < N; i++)
+					const int N = 10;
+					for (unsigned int i = 0; i < N; i++)
 					{
-						float r_phi = dis(gen) * 2 * M_PI;
-						float r_theta = acos(1 - 2 * dis(gen));
+						float u = dis(gen);
+						float v = dis(gen);
+						float r_phi = u * 2.0f * static_cast<float>(M_PI);
+						float r_theta = acosf(sqrtf(v));
+						//float r_theta = acosf(1 - 2 * v);
+
 
 						Vec4 randHemiDir = { sinf(r_phi) * sinf(r_theta), sinf(r_phi) * cosf(r_theta), sinf(r_theta) };
 
@@ -188,30 +194,30 @@ ColorDbl Camera::tracePath(std::list<Object*>& objectList, std::list<Light*>& li
 						float x = randHemiDir.coords[0] * X.coords[0] + randHemiDir.coords[1] * Y.coords[0] + randHemiDir.coords[2] * Z.coords[0];
 						float y = randHemiDir.coords[0] * X.coords[1] + randHemiDir.coords[1] * Y.coords[1] + randHemiDir.coords[2] * Z.coords[1];
 						float z = randHemiDir.coords[0] * X.coords[2] + randHemiDir.coords[1] * Y.coords[2] + randHemiDir.coords[2] * Z.coords[2];
+
 						//trace path
 						Vec4 M = { x,y,z,1 };
+						//M.printCoords();
 						Ray indirect_ray = { hitPoint, M };
-						indirect_col += tracePath(objectList, lightList, indirect_ray, depth + 1) ;
+						//M.printCoords();
+						indirect_col = indirect_col + ((tracePath(objectList, lightList, indirect_ray) / PDF) * u);
+						//indirect_col.printCoords();
 					}
+					indirect_col = indirect_col / N;
+					#endif // DEBUG
+					col = (hitColor * radiance) + indirect_col;
+					//col = indirect_col;
 
-					//Vec4 refl_dir = calcRandomHemiDir(X,Y,Z); //change to montecarlo reflection 
-					//***********************
 				}
-
-				col = hitMat.diff_col * radiance + indirect_col;
-				//col = indirect_col;
-			break;	
+				break;
+				}
 			}
 		}
-		
-	}
-
-
-	return col;
-
-
+		return col;
+	//}
+	//return ColorDbl{};
 }
-void Camera::createImage(std::string filename, std::string colorSpace)
+void Camera::createImage(const std::string &filename,const std::string &colorSpace)
 {
 	std::ofstream img("../Renders/" + filename);
 	img << "P3" << std::endl;

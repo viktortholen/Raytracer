@@ -16,10 +16,10 @@ public:
 		color = other.color;
 		ray = other.ray;
 	}
-	Pixel& operator=(Pixel& p) { //assignment
-		Pixel temp{ p };
-		std::swap(p.color, color);
-		std::swap(p.ray, ray);
+	Pixel& operator=(const Pixel& p) { //assignment
+		Pixel tmp{ p };
+		std::swap(tmp.color, color);
+		std::swap(tmp.ray, ray);
 		return *this;
 	}
 

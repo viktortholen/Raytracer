@@ -9,7 +9,7 @@ public:
 	~Vec4() = default;
 
 	Vec4(const Vec4& other);
-	Vec4& operator=(Vec4 p);
+	Vec4& operator=(const Vec4 &p);
 
 	Vec4 operator-(const Vec4& v) const;
 	Vec4 operator-(const float& v) const;

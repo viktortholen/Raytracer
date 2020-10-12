@@ -21,13 +21,12 @@ bool Mesh::castRay(Ray& ray, float& t_closest)
 		if ((*it)->rayIntersection(ray, t) && t < t_closest)
 		{
 			hit = true;
-			ray.setTriangle(*it);
+			ray.setHitPropertiesMesh(*it, t);
+			/*ray.setTriangle(*it);
 			ray.setEndPoint(t);
 			ray.setHitNormal((*it)->getNormal().normalize());
+			ray.setColor((*it)->getColor());*/
 			t_closest = t;
-			//ray.endPointTriangle = (*it);
-			//ray.pe = ray.ps + (t * ray.dir.normalize()); //set the endpoint
-			//ray.hitNormal =(*it)->getNormal().normalize();
 		}
 
 	}

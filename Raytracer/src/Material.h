@@ -6,8 +6,8 @@ enum class MaterialType
 struct Material {
 	//Lambertian properties i dont know...
 
-	Material(MaterialType _type, ColorDbl col) 
-		:type{ _type }, diff_col{ col }{}
+	Material(const MaterialType& _type, const ColorDbl& col, const float& a) 
+		:type{ _type }, diff_col{ col }, absorption{a}{}
 	Material()
 	{
 		type = MaterialType::DIFFUSE_LAMBERTIAN;
@@ -15,9 +15,9 @@ struct Material {
 	}
 
 	MaterialType type;
-	int Kd;//?
-	float Ks;
+	//int Kd;//?
+	//float Ks;
 	ColorDbl diff_col;
-	ColorDbl BRDF;
-	float absorption = 0.8f;
+	//ColorDbl BRDF;
+	float absorption = 0.9f;
 };
