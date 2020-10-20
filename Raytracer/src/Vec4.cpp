@@ -48,6 +48,10 @@ float Vec4::dotProduct(const Vec4& v) const
 {
 	return glm::dot(glm::vec3(coords[0], coords[1], coords[2]), glm::vec3(v.coords[0], v.coords[1], v.coords[2]));
 }
+float Vec4::euclideanDist() const
+{
+	return sqrtf(coords[0] * coords[0] + coords[1] * coords[1] + coords[2] * coords[2]);
+}
 void Vec4::printCoords()
 {
 	std::cout << "\nx: " << coords[0] << ", y: " << coords[1] << " , z: " << coords[2];

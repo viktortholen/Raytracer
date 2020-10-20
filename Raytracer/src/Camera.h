@@ -15,7 +15,7 @@ public:
 	void render(const Scene& scene);
 	void createImage(const std::string &filename, const std::string &colorSpace);
 	void openImage(std::string filename);
-	ColorDbl tracePath(std::list<Object*> &objectList, std::list<Light*> &lightList, Ray& ray);
+	ColorDbl tracePath(std::list<Object*> &objectList, std::list<Mesh*> &lightList, Ray& ray);
 	//ColorDbl renderSample(std::list<Object*>* objectList, std::list<Light*>* lightList, Ray* ray, unsigned int* samples);
 	bool objectIntersect(std::list<Object*>& objectList, Ray& ray, Object*& hitObject, float& t_closest);
 private:

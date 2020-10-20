@@ -18,11 +18,11 @@ public:
 	void createTetra(const Vec4& p, const float& size, const Material& m);
 	void createSphere(const Vec4& p, const float& size, const Material& m);
 	void createCube(const Vec4& p, const float& size, const Material& m);
-
+	void createPlane(const Vec4& p, const float& size, const Material& m);
 	std::list<Object*> getObjectList() const;
-	std::list<Light*> getLightList() const;
+	std::list<Mesh*> getLightList() const;
 private:
 	std::list<Object*> objectList;
-	std::list<Light*> lightList;
+	std::list<Mesh*> lightList;
 
 };

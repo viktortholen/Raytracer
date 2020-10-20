@@ -7,7 +7,7 @@ Scene::~Scene()
 		delete* it;
 	}
 	objectList.clear();
-	for (std::list<Light*>::iterator it = lightList.begin(); it != lightList.end(); ++it) {
+	for (std::list<Mesh*>::iterator it = lightList.begin(); it != lightList.end(); ++it) {
 		delete* it;
 	}
 	lightList.clear();
@@ -15,23 +15,37 @@ Scene::~Scene()
 std::list<Object*> Scene::getObjectList() const {
 	return objectList;
 }
-std::list<Light*> Scene::getLightList() const {
+std::list<Mesh*> Scene::getLightList() const {
 	return lightList;
 }
 void Scene::createScene() {
 	Material diff_mat{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.9f };
 	Material refl_mat{ MaterialType::REFLECTIVE_LAMBERTIAN, ColorDbl(255,255,255), 0.1f };
-
+	Material emission_mat{ MaterialType::EMISSION, ColorDbl(255,255,255), 0.0f};
 
 	createTetra(Vec4(6, 0, -3), 2.0f, refl_mat);
-	createCube(Vec4(6, -2, -3), 2.0f, refl_mat);
+	createCube(Vec4(6, -2, -3), 2.0f, diff_mat);
 	createRoom(diff_mat);
-
+	createPlane(Vec4(6, 0, 3), 1.0f, emission_mat);
 
 	createSphere(Vec4(6, 3, -3), 1, refl_mat);
 
-	Light* light = new Light(Vec4(5, 0, 3), 1.0f);
+	
+
+}
+void Scene::createPlane(const Vec4& p, const float& size, const Material& m)
+{
+	Vec4 v0(p.coords[0] - size / 2, p.coords[1] - size / 2, p.coords[2]);
+	Vec4 v1(p.coords[0] - size / 2, p.coords[1] + size / 2, p.coords[2]);
+	Vec4 v2(p.coords[0] + size / 2, p.coords[1] + size / 2, p.coords[2]);
+	Vec4 v3(p.coords[0] + size / 2, p.coords[1] - size / 2, p.coords[2]);
+
+	Mesh* light = new Mesh(m);
+	light->addTriangleToMesh(new Triangle(v0, v1, v3, m.diff_col));
+	light->addTriangleToMesh(new Triangle(v1, v2, v3, m.diff_col));
+	//Light* light = new Light(Vec4(5, 0, 3), 1.0f); //point
 	lightList.push_back(light);
+	objectList.push_back(light);
 
 }
 void Scene::createTetra(const Vec4& p, const float& size, const Material& m)
@@ -97,9 +111,9 @@ void Scene::createRoom(const Material& m)
 	room->addTriangleToMesh(new Triangle(Vec4(5, 0, 5), Vec4(0, -6, 5), Vec4(-3, 0, 5), ColorDbl(255, 255, 255)));
 
 	//Golv		 
-	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(0, 6, -5), Vec4(-3, 0, -5), ColorDbl(255, 255, 255)));
-	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(10, 6, -5), Vec4(0, 6, -5), ColorDbl(255, 255, 255)));
-	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(13, 0, -5), Vec4(10, 6, -5), ColorDbl(255, 255, 255)));
+	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(0, 6, -5), Vec4(-3, 0, -5), ColorDbl(255, 255, 200)));
+	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(10, 6, -5), Vec4(0, 6, -5), ColorDbl(255, 255, 200)));
+	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(13, 0, -5), Vec4(10, 6, -5), ColorDbl(255, 255, 200)));
 
 	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(10, -6, -5), Vec4(13, 0, -5), ColorDbl(255, 255, 255)));
 	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(0, -6, -5), Vec4(10, -6, -5), ColorDbl(255, 255, 255)));

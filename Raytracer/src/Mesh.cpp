@@ -32,6 +32,7 @@ bool Mesh::castRay(Ray& ray, float& t_closest)
 	}
 	return hit;
 }
+
 Material Mesh::getMaterial() const
 {
 	return material;

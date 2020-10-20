@@ -22,6 +22,7 @@ public:
 
 	Vec4 crossProduct(const Vec4& v) const;
 	float dotProduct(const Vec4& v) const;
+	float euclideanDist() const;
 	void printCoords();
 	
 	Vec4 normalize();

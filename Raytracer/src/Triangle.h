@@ -27,12 +27,12 @@ public:
 	//Triangle& operator=(const Triangle &p);
 
 	void calculateNormal();
-
+	float calculateArea() const;
+	Vec4 pickRandomPoint(const float& u, const float& v) const;
 	Vec4 getNormal()
 	{
 		return normal;
 	}
-
 	ColorDbl getColor();
 
 private:

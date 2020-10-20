@@ -21,10 +21,10 @@ void Camera::render(const Scene& scene) {
 	float delta = static_cast<float>(2.0 / width);
 
 	float percentage;
-	int samples = 100;
+	int samples = 10;
 	
 	std::list<Object*> objectList = scene.getObjectList();
-	std::list<Light*> lightList = scene.getLightList();
+	std::list<Mesh*> lightList = scene.getLightList();
 
 	std::vector<std::future<ColorDbl>> future_vec;
 
@@ -52,6 +52,7 @@ void Camera::render(const Scene& scene) {
 			}
 			
 			col = col / samples;
+			//col.printCoords();
 			pixel_array[i][j].setColor(col);
 		}
 	}
@@ -83,29 +84,28 @@ bool Camera::objectIntersect(std::list<Object*>& objectList, Ray& ray, Object*& 
 
 	return true;
 }
-ColorDbl Camera::tracePath(std::list<Object*>& objectList, std::list<Light*>& lightList, Ray& ray)	//RAYDEPTH ÄR INTE BRA
+ColorDbl Camera::tracePath(std::list<Object*>& objectList, std::list<Mesh*>& lightList, Ray& ray)	//RAYDEPTH ÄR INTE BRA
 {
-	//LOG("depth: " << depth <<std::endl)
-	//if (depth < 10) {
-		ColorDbl col;
-		Object* hitObject = nullptr;
-		//loop through objects instead of meshes (includes spheres)
-		float t_temp = INFINITY_FLOAT;
-		if (objectIntersect(objectList, ray, hitObject, t_temp))
+	ColorDbl col;
+	Object* hitObject = nullptr;
+	//loop through objects instead of meshes (includes spheres)
+	float t_temp = INFINITY_FLOAT;
+	const int SHADOW_RAY_COUNT = 10;
+	if (objectIntersect(objectList, ray, hitObject, t_temp))
+	{
+		//Do everthing here
+
+		Material hitMat = hitObject->getMaterial();
+		ColorDbl hitColor = ray.getColor();
+		Vec4 dir = ray.getDirection().normalize();
+		Vec4 norm_hit = ray.getHitNormal().normalize();
+
+		Vec4 hitPoint = ray.getOffsetEndPointAlongNormal(EPSILON);
+		float T = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+		if (T < 1 - hitMat.absorption)
 		{
-			//Do everthing here
-
-			Material hitMat = hitObject->getMaterial();
-			ColorDbl hitColor = ray.getColor();
-			Vec4 dir = ray.getDirection().normalize();
-			Vec4 norm_hit = ray.getHitNormal().normalize();
-
-			Vec4 hitPoint = ray.getOffsetEndPointAlongNormal(EPSILON);
-			float T = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-			if (T < 1 - hitMat.absorption)
+			switch (hitMat.type)
 			{
-				switch (hitMat.type)
-				{
 				case(MaterialType::REFLECTIVE_LAMBERTIAN): //perfect mirror
 				{
 
@@ -121,46 +121,70 @@ ColorDbl Camera::tracePath(std::list<Object*>& objectList, std::list<Light*>& li
 				{
 					float radiance = 0.0f;
 					ColorDbl indirect_col;
-					int areaLightSamples = 3;
+					std::random_device rd;  //Will be used to obtain a seed for the random number engine
+					std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+					std::uniform_real_distribution<float> dis(0.0, 1.0);
 
 					//Direct lighting:
-					for (std::list<Light*>::iterator lights = lightList.begin(); lights != lightList.end(); lights++)
+					for (std::list<Mesh*>::iterator lights = lightList.begin(); lights != lightList.end(); lights++)
 					{
-
-						//skapa lista med samplecoordinater i lightclassen här?
-
-						//Gå igenom alla samples från ljuskällan och räkna rays enskilt från dem
-						//for (int i = 0; i < areaLightSamples; i++) {
-
-						Vec4 lightDir = (*lights)->getPosition() - hitPoint;
-						Ray shadow_ray{ hitPoint, lightDir.normalize() };
-
-						float angleIntensity = lightDir.normalize().dotProduct(norm_hit);
-
-						float lightDistance = lightDir.dotProduct(lightDir);
-
-						Object* shadowObject = nullptr;
-						float t_shadow = INFINITY_FLOAT;
-						/*
-						TODO:
-							change the direct lighting to use area lights instead of point.
-						*/
-						//check normal of object compared with shadowray direction and rule out if its impossible to hit.
-						if (angleIntensity > EPSILON)
+						//*****move******
+						std::list<Triangle*> tlist = (*lights)->getTriangleList();
+						Material emission_mat = (*lights)->getMaterial();
+						for (int j = 0; j < SHADOW_RAY_COUNT; j++)
 						{
-							//if object is not in shadow -> calculate radiance from the point.
-							if (!(objectIntersect(objectList, shadow_ray, shadowObject, t_shadow) && t_shadow * t_shadow < lightDistance))
+							for (std::list<Triangle*>::iterator t = tlist.begin(); t != tlist.end(); t++) //switch for loops?
 							{
-								radiance += (*lights)->getIntensity() * angleIntensity;
+								
+								//Triangle* t = tlist.front() + i;
+								float A = (*t)->calculateArea();
+								//LOG("area: " << A << "\n")
+								float pdf = 1 / A;
+								float u = dis(gen);
+								float v = dis(gen);
+								Vec4 q = (*t)->pickRandomPoint(u, v);
+								//q.printCoords();
 
+								//*********************
+								//Vec4 lightDir = (*lights)->getPosition() - hitPoint;
+								Vec4 lightDir = q - hitPoint;
+								Ray shadow_ray{ hitPoint, lightDir.normalize() };
+
+								float BRDF = lightDir.normalize().dotProduct(norm_hit);
+
+								float lightDistance = lightDir.dotProduct(lightDir);
+
+								Object* shadowObject = nullptr;
+								float t_shadow = INFINITY_FLOAT;
+								/*
+								TODO:
+									change the direct lighting to use area lights instead of point.
+								*/
+								//check normal of object compared with shadowray direction and rule out if its impossible to hit.
+								if (BRDF > EPSILON)
+								{
+									//if object is not in shadow -> calculate radiance from the point.
+									if (!(objectIntersect(objectList, shadow_ray, shadowObject, t_shadow) && t_shadow * t_shadow < lightDistance))
+									{
+										Vec4 Sk = q - hitPoint;
+										float dk = Sk.euclideanDist();
+										Vec4 Na = (*t)->getNormal();
+										Vec4 Nx = norm_hit;
+										float alpha = -Sk.dotProduct(Na) / dk;
+										float beta = Sk.dotProduct(Nx) / dk;
+										radiance += emission_mat.intensity * BRDF * ((alpha * beta) / (dk*dk)) * A / pdf; //no Vk 
+
+									}
+								}
 							}
 						}
-
 					}
+					radiance = radiance / SHADOW_RAY_COUNT;
+
+
 					//Monte Carlo things: (INDIRECT LIGHT)
 					
 					#ifdef INDIRECT
-
 					//local coordinate system directions for hitpoint:
 					Vec4 Y;
 					if (fabs(norm_hit.coords[0] > fabs(norm_hit.coords[1])))
@@ -175,9 +199,7 @@ ColorDbl Camera::tracePath(std::list<Object*>& objectList, std::list<Light*>& li
 					Vec4 Z = norm_hit;
 
 					const float PDF = 1 / (2.0f * static_cast<float>(M_PI));
-					std::random_device rd;  //Will be used to obtain a seed for the random number engine
-					std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-					std::uniform_real_distribution<float> dis(0.0, 1.0);
+
 					const int N = 10;
 					for (unsigned int i = 0; i < N; i++)
 					{
@@ -205,17 +227,25 @@ ColorDbl Camera::tracePath(std::list<Object*>& objectList, std::list<Light*>& li
 					}
 					indirect_col = indirect_col / N;
 					#endif // DEBUG
-					col = (hitColor * radiance) + indirect_col;
+					//LOG("radiance: "<< radiance << std::endl)
+					col = (hitColor * radiance) +indirect_col;
+					//col.printCoords();
 					//col = indirect_col;
+					break;
 
 				}
-				break;
+				case(MaterialType::EMISSION):
+				{
+					//LOG("hit light \n")
+					col = ColorDbl(255, 255, 255);
+					break;
 				}
+			break;
 			}
+
 		}
-		return col;
-	//}
-	//return ColorDbl{};
+	}
+	return col;
 }
 void Camera::createImage(const std::string &filename,const std::string &colorSpace)
 {
@@ -314,7 +344,7 @@ void Camera::createImage(const std::string &filename,const std::string &colorSpa
 		delete[] log_array;
 
 	}
-
+	img.close();
 
 
 }

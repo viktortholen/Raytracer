@@ -1,7 +1,7 @@
 #pragma once
 enum class MaterialType
 {
-	DIFFUSE_LAMBERTIAN, REFLECTIVE_LAMBERTIAN
+	DIFFUSE_LAMBERTIAN, REFLECTIVE_LAMBERTIAN, EMISSION
 };
 struct Material {
 	//Lambertian properties i dont know...
@@ -20,4 +20,5 @@ struct Material {
 	ColorDbl diff_col;
 	//ColorDbl BRDF;
 	float absorption = 0.9f;
+	float intensity = 100.0f;
 };
