@@ -21,7 +21,7 @@ void Camera::render(const Scene& scene) {
 	float delta = static_cast<float>(2.0 / width);
 
 	float percentage;
-	int samples = 10;
+	int samples = 100;
 	
 	std::list<Object*> objectList = scene.getObjectList();
 	std::list<Light*> lightList = scene.getLightList();
