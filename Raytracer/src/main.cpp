@@ -1,8 +1,10 @@
 #include "Includer.h"
 #include "Scene.h"
 #include "Camera.h"
-int main() {
 
+int main() {
+	unsigned int n = std::thread::hardware_concurrency();
+	std::cout << n << " concurrent threads are supported.\n";
 	Scene theScene{};
 	theScene.createScene();
 

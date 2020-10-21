@@ -7,6 +7,8 @@
 #include "Light.h"
 #define LOG(x) std::cout << x;
 
+static std::mutex sample_mutex;
+
 class Camera {
 public:
 	Camera();
@@ -15,8 +17,9 @@ public:
 	void render(const Scene& scene);
 	void createImage(const std::string &filename, const std::string &colorSpace);
 	void openImage(std::string filename);
+	void renderSample(std::list<Object*>* objectList, std::list<Mesh*>* lightList, Ray* ray, int samples, int i, int j);
 	ColorDbl tracePath(std::list<Object*> &objectList, std::list<Mesh*> &lightList, Ray& ray);
-	//ColorDbl renderSample(std::list<Object*>* objectList, std::list<Light*>* lightList, Ray* ray, unsigned int* samples);
+	
 	bool objectIntersect(std::list<Object*>& objectList, Ray& ray, Object*& hitObject, float& t_closest);
 private:
 	const int width = 800;
@@ -28,5 +31,5 @@ private:
 	const Vec4 e1{ -1,0,0 };
 	const Vec4 e2{ -2,0,0 };
 	bool eyePoint = 0;
-
+	std::vector<std::future<void>> future_vec;
 };

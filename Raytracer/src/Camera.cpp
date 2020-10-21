@@ -12,7 +12,6 @@ Camera::~Camera() {
 		delete[] pixel_array[i];
 	delete[] pixel_array;
 }
-
 void Camera::render(const Scene& scene) {
 
 	//for loop för att gå igenom pixlar - skjuta Ray genom alla
@@ -21,13 +20,12 @@ void Camera::render(const Scene& scene) {
 	float delta = static_cast<float>(2.0 / width);
 
 	float percentage;
-	int samples = 10;
+	int samples = 1;
 	
 	std::list<Object*> objectList = scene.getObjectList();
 	std::list<Mesh*> lightList = scene.getLightList();
 
-	std::vector<std::future<ColorDbl>> future_vec;
-
+	
 	for (int i = 0; i < height; i++)
 	{
 		//LOG progress:
@@ -43,30 +41,52 @@ void Camera::render(const Scene& scene) {
 			Vec4 pixelIntersection{ 0.0, (j - quad_size_y + ry) * delta, (i - quad_size_z + rz) * delta };
 			Vec4 dir = pixelIntersection - e1;
 			Ray ray{ e1, dir.normalize() };
-			ColorDbl col;
-			#define INDIRECT
-			for  (int k = 0; k < samples; k++)
-			{
-				col = col + tracePath(objectList, lightList, ray);
-				//future_vec.push_back(std::async(std::launch::async, &Camera::renderSample, &objectList, &lightList, &ray, &samples));
-			}
+			//#define INDIRECT
+			//#define seq
+
+			#ifdef seq
+				ColorDbl col;
 			
-			col = col / samples;
-			//col.printCoords();
-			pixel_array[i][j].setColor(col);
+				for  (int k = 0; k < samples; k++)
+				{
+					col = col + tracePath(objectList, lightList, ray);
+				
+				}
+
+				col = col / samples;
+				pixel_array[i][j].setColor(col);
+			#else
+				future_vec.push_back(std::async(std::launch::async, &Camera::renderSample, this, &objectList, &lightList, &ray, samples, i, j));
+			#endif
 		}
 	}
+	//for (int i = 0; i < 800; i++)
+	//{
+	//	for (int j = 0; j < 800; j++)
+	//	{
+	//		//std::future<ColorDbl> fut = future_vec.at(800 * i + j);
+	//		std::future<ColorDbl> &fut = future_vec[800 * i + j];
+	//		ColorDbl col = fut.get();
+	//		pixel_array[i][j].setColor(col);
+	//	}
+	//}
+
+
 }
-//ColorDbl Camera::renderSample(std::list<Object*>* objectList, std::list<Light*>* lightList, Ray* ray, unsigned int* samples)
-//{
-//	ColorDbl col;
-//	for  (unsigned int k = 0; k < *samples; k++)
-//	{
-//		col = col + tracePath(*objectList, *lightList, *ray);
-//	}
-//	col = col / static_cast<int>(*samples);
-//	//pixel_array[*i][*j].setColor(col);
-//}
+
+void Camera::renderSample(std::list<Object*>* objectList, std::list<Mesh*>* lightList, Ray* ray, int samples, int i, int j)
+{
+	ColorDbl col;
+	std::lock_guard<std::mutex> lock(sample_mutex);
+	for  (int k = 0; k < samples; k++)
+	{
+		col = col + tracePath(*objectList, *lightList, *ray);
+	}
+
+	col = col / static_cast<int>(samples);
+	//LOG(*samples << " " i << " " << j << std::endl)
+	pixel_array[i][j].setColor(col);
+}
 bool Camera::objectIntersect(std::list<Object*>& objectList, Ray& ray, Object*& hitObject, float& t_closest)
 {
 	hitObject = nullptr;

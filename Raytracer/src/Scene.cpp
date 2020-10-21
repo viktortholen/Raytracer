@@ -7,9 +7,9 @@ Scene::~Scene()
 		delete* it;
 	}
 	objectList.clear();
-	for (std::list<Mesh*>::iterator it = lightList.begin(); it != lightList.end(); ++it) {
-		delete* it;
-	}
+	//for (std::list<Mesh*>::iterator it = lightList.begin(); it != lightList.end(); ++it) {
+	//	delete* it;
+	//}
 	lightList.clear();
 }
 std::list<Object*> Scene::getObjectList() const {
