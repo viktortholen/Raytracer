@@ -18,22 +18,22 @@ public:
 	{
 		calculateNormal();
 	}
-	bool rayIntersection(Ray& ray, float& t);
+	bool rayIntersection(Ray& ray, float& t) const;
 
 	~Triangle() = default;
 
-	//Triangle(const Triangle& other);
+	Triangle(const Triangle& other);
 
-	//Triangle& operator=(const Triangle &p);
+	Triangle& operator=(const Triangle &p);
 
 	void calculateNormal();
 	float calculateArea() const;
 	Vec4 pickRandomPoint(const float& u, const float& v) const;
-	Vec4 getNormal()
+	Vec4 getNormal() const
 	{
 		return normal;
 	}
-	ColorDbl getColor();
+	ColorDbl getColor() const;
 
 private:
 	ColorDbl color{255,255,255};

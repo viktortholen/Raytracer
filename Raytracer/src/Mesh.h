@@ -9,11 +9,11 @@ public:
 	~Mesh();
 
 	void addTriangleToMesh(Triangle *t);
-	std::list<Triangle*> getTriangleList() const;
-	virtual bool castRay(Ray& ray, float& t_closest) override;
+	std::vector<Triangle*> getTriangleList() const;
+	virtual bool castRay(Ray& ray, float& t_closest) const override;
 	Material getMaterial() const override;
 
 private:
-	std::list<Triangle*> triangleList;
+	std::vector<Triangle*> triangleList;
 	Material material;
 };

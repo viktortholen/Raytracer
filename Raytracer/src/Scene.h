@@ -19,10 +19,10 @@ public:
 	void createSphere(const Vec4& p, const float& size, const Material& m);
 	void createCube(const Vec4& p, const float& size, const Material& m);
 	void createPlane(const Vec4& p, const float& size, const Material& m);
-	std::list<Object*> getObjectList() const;
-	std::list<Mesh*> getLightList() const;
+	std::vector<Object*> getObjectList() const;
+	std::vector<Mesh*> getLightList() const;
 private:
-	std::list<Object*> objectList;
-	std::list<Mesh*> lightList;
+	std::vector<Object*> objectList;
+	std::vector<Mesh*> lightList;
 
 };

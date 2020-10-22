@@ -2,7 +2,7 @@
 #include "Triangle.h"
 
 
-bool Triangle::rayIntersection(Ray& ray, float& t) {
+bool Triangle::rayIntersection(Ray& ray, float& t) const {
 	const float EPSILON = 0.00001f;
 
 
@@ -36,24 +36,24 @@ bool Triangle::rayIntersection(Ray& ray, float& t) {
 	}
 	return true;
 }
-//Triangle::Triangle(const Triangle& other)
-//{
-//	v0 = other.v0;
-//	v1 = other.v1;
-//	v2 = other.v2;
-//	normal = other.normal;
-//	color = other.color;
-//}
+Triangle::Triangle(const Triangle& other)
+{
+	v0 = other.v0;
+	v1 = other.v1;
+	v2 = other.v2;
+	normal = other.normal;
+	color = other.color;
+}
 
-//Triangle& Triangle::operator=(const Triangle& p) { //assignment
-//	Triangle tmp{ *this };
-//	std::swap(tmp.color, color);
-//	std::swap(tmp.v0, v0);
-//	std::swap(tmp.v1, v1);
-//	std::swap(tmp.v2, v2);
-//	std::swap(tmp.normal, normal);
-//	return *this;
-//}
+Triangle& Triangle::operator=(const Triangle& p) { //assignment
+	Triangle tmp{ p };
+	std::swap(tmp.color, color);
+	std::swap(tmp.v0, v0);
+	std::swap(tmp.v1, v1);
+	std::swap(tmp.v2, v2);
+	std::swap(tmp.normal, normal);
+	return *this;
+}
 
 void Triangle::calculateNormal()
 {
@@ -92,6 +92,6 @@ Vec4 Triangle::pickRandomPoint(const float &u, const float &v) const
 	return (1 - u - v) * v0 + u * v1 + v * v2;
 	//return u * (v1 - v0) + v * (v2 - v0);
 }
-ColorDbl Triangle::getColor() {
+ColorDbl Triangle::getColor() const {
 	return color;
 }

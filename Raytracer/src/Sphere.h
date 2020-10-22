@@ -10,7 +10,7 @@ public:
 		:r{ _r }, center{ _center }, material{m}{}
 	~Sphere() = default;
 
-	virtual bool castRay(Ray& ray, float& t_closest) override
+	virtual bool castRay(Ray& ray, float& t_closest) const override
 	{
 		Vec4 o = ray.getStartPoint();
 		//Vec4 I = (ray.pe - ray.ps).normalize(); //direction

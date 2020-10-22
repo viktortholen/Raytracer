@@ -17,10 +17,10 @@ public:
 	void render(const Scene& scene);
 	void createImage(const std::string &filename, const std::string &colorSpace);
 	void openImage(std::string filename);
-	void renderSample(std::list<Object*>* objectList, std::list<Mesh*>* lightList, Ray* ray, int samples, int i, int j);
-	ColorDbl tracePath(std::list<Object*> &objectList, std::list<Mesh*> &lightList, Ray& ray);
+	ColorDbl renderSample(const std::vector<Object*>* objectList, const std::vector<Mesh*>* lightList, Ray* ray, int samples, int i, int j);
+	ColorDbl tracePath(const std::vector<Object*> &objectList, const std::vector<Mesh*> &lightList, Ray& ray);
 	
-	bool objectIntersect(std::list<Object*>& objectList, Ray& ray, Object*& hitObject, float& t_closest);
+	bool objectIntersect(const std::vector<Object*>& objectList, Ray& ray, Object*& hitObject, float& t_closest) const;
 private:
 	const int width = 800;
 	const int height = 800;
@@ -31,5 +31,5 @@ private:
 	const Vec4 e1{ -1,0,0 };
 	const Vec4 e2{ -2,0,0 };
 	bool eyePoint = 0;
-	std::vector<std::future<void>> future_vec;
+	std::vector<std::future<ColorDbl>> future_vec;
 };

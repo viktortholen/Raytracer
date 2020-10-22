@@ -3,29 +3,25 @@
 
 Mesh:: ~Mesh()
 {
-	for (std::list<Triangle*>::iterator it = triangleList.begin(); it != triangleList.end(); ++it) {
+	for (std::vector<Triangle*>::iterator it = triangleList.begin(); it != triangleList.end(); ++it) {
 		delete* it;
 	}
 	triangleList.clear();
 }
-std::list<Triangle*> Mesh::getTriangleList() const
+std::vector<Triangle*> Mesh::getTriangleList() const
 {
 	return triangleList;
 }
-bool Mesh::castRay(Ray& ray, float& t_closest)
+bool Mesh::castRay(Ray& ray, float& t_closest) const
 {
 	float t;
 	bool hit = false;
-	for (std::list<Triangle*>::iterator it = triangleList.begin(); it != triangleList.end(); it++)
+	for (std::vector<Triangle*>::const_iterator it = triangleList.cbegin(); it != triangleList.cend(); it++)
 	{
 		if ((*it)->rayIntersection(ray, t) && t < t_closest)
 		{
 			hit = true;
 			ray.setHitPropertiesMesh(*it, t);
-			/*ray.setTriangle(*it);
-			ray.setEndPoint(t);
-			ray.setHitNormal((*it)->getNormal().normalize());
-			ray.setColor((*it)->getColor());*/
 			t_closest = t;
 		}
 

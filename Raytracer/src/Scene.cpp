@@ -3,19 +3,19 @@
 
 Scene::~Scene()
 {
-	for (std::list<Object*>::iterator it = objectList.begin(); it != objectList.end(); ++it) {
-		delete* it;
-	}
+	//for (auto it = objectList.begin(); it != objectList.end(); ++it) {
+	//	delete* it;
+	//}
 	objectList.clear();
-	//for (std::list<Mesh*>::iterator it = lightList.begin(); it != lightList.end(); ++it) {
+	//for (std::vector<Mesh*>::iterator it = lightList.begin(); it != lightList.end(); ++it) {
 	//	delete* it;
 	//}
 	lightList.clear();
 }
-std::list<Object*> Scene::getObjectList() const {
+std::vector<Object*> Scene::getObjectList() const {
 	return objectList;
 }
-std::list<Mesh*> Scene::getLightList() const {
+std::vector<Mesh*> Scene::getLightList() const {
 	return lightList;
 }
 void Scene::createScene() {
