@@ -39,9 +39,9 @@ void Camera::render(const Scene& scene) {
 
 		for (int j = 0; j < height; j++)
 		{
-
-			#define INDIRECT
-			#define MULTI_THREADING
+			//use vector indexes instead of iterators
+			//#define INDIRECT
+			//#define MULTI_THREADING
 			#ifdef MULTI_THREADING
 
 			
@@ -57,7 +57,7 @@ void Camera::render(const Scene& scene) {
 							Vec4 pixelIntersection{ 0.0, (j - quad_size_y + ry) * delta, (i - quad_size_z + rz) * delta };
 							Vec4 dir = pixelIntersection - e1;
 							Ray ray{ e1, dir.normalize() };
-							col = col + tracePath(objectList, lightList, ray);
+							col = col + tracePath(objectList, lightList, ray, 0);
 						}
 						col = col / static_cast<float>(samples);
 						//LOG(*at_i << " " << *at_j << std::endl)
@@ -83,7 +83,7 @@ void Camera::render(const Scene& scene) {
 				Vec4 pixelIntersection{ 0.0, (j - quad_size_y + ry) * delta, (i - quad_size_z + rz) * delta };
 				Vec4 dir = pixelIntersection - e1;
 				Ray ray{ e1, dir.normalize() };
-				col = col + tracePath(objectList, lightList, ray);
+				col = col + tracePath(objectList, lightList, ray, 0);
 			}
 			//col = tracePath(objectList, lightList, ray);
 
@@ -114,25 +114,25 @@ void Camera::render(const Scene& scene) {
 	//}
 }
 
-ColorDbl Camera::renderSample(const std::list<Object*>* objectList, const std::list<Mesh*>* lightList, Ray* ray, int samples, volatile std::atomic<std::size_t>* at_i, volatile std::atomic<std::size_t>* at_j)
-{
-	ColorDbl col;
-	
-	//LOG("thread id: "<<std::this_thread::get_id()<<std::endl)
-	//for  (int k = 0; k < samples; k++)
-	//{
-	//	col = col + tracePath(*objectList, *lightList, *ray);
-	//}
-	col = tracePath(*objectList, *lightList, *ray);
-	
-	col = col / static_cast<int>(samples);
-	//LOG(*at_i << " " << *at_j << std::endl)
-	std::lock_guard<std::mutex> lock(sample_mutex);
-	pixel_array[*at_i][*at_j].setColor(col);
-
-	return col;
-}
-bool Camera::objectIntersect(const std::list<Object*>& objectList, Ray& ray, Object*& hitObject, float& t_closest) const
+//ColorDbl Camera::renderSample(const std::list<Object*>* objectList, const std::list<Mesh*>* lightList, Ray* ray, int samples, volatile std::atomic<std::size_t>* at_i, volatile std::atomic<std::size_t>* at_j)
+//{
+//	ColorDbl col;
+//	
+//	//LOG("thread id: "<<std::this_thread::get_id()<<std::endl)
+//	//for  (int k = 0; k < samples; k++)
+//	//{
+//	//	col = col + tracePath(*objectList, *lightList, *ray);
+//	//}
+//	col = tracePath(*objectList, *lightList, *ray);
+//	
+//	col = col / static_cast<int>(samples);
+//	//LOG(*at_i << " " << *at_j << std::endl)
+//	std::lock_guard<std::mutex> lock(sample_mutex);
+//	pixel_array[*at_i][*at_j].setColor(col);
+//
+//	return col;
+//}
+bool Camera::objectIntersect(const std::list<Object*> objectList, Ray& ray, Object*& hitObject, float& t_closest) const
 {
 
 		hitObject = nullptr;
@@ -159,9 +159,8 @@ bool Camera::objectIntersect(const std::list<Object*>& objectList, Ray& ray, Obj
 	
 	return true;
 }
-ColorDbl Camera::tracePath(const std::list<Object*>& objectList, const std::list<Mesh*> lightList, Ray& ray)
+ColorDbl Camera::tracePath(const std::list<Object*> objectList, const std::list<Mesh*> lightList, Ray& ray, const int& depth)
 {
-
 	ColorDbl col;
 	Object* hitObject = nullptr;
 	//loop through objects instead of meshes (includes spheres)
@@ -176,7 +175,7 @@ ColorDbl Camera::tracePath(const std::list<Object*>& objectList, const std::list
 
 		Vec4 hitPoint = ray.getOffsetEndPointAlongNormal(EPSILON);
 		float T = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-		if (T < 1 - hitMat.absorption)
+		if (T < 1 - hitMat.absorption || depth < EPSILON)
 		{
 			switch (hitMat.type)
 			{
@@ -187,7 +186,7 @@ ColorDbl Camera::tracePath(const std::list<Object*>& objectList, const std::list
 					//trace new ray in the reflection direction:
 					Ray refl_ray{ hitPoint, refl_dir };
 
-					col = tracePath(objectList, lightList, refl_ray);
+					col = tracePath(objectList, lightList, refl_ray, depth + 1);
 					break;
 				}
 				case(MaterialType::DIFFUSE_LAMBERTIAN): //
@@ -287,7 +286,7 @@ ColorDbl Camera::tracePath(const std::list<Object*>& objectList, const std::list
 						//M.printCoords();
 						Ray indirect_ray = { hitPoint, M };
 						//M.printCoords();
-						indirect_col = indirect_col + ((tracePath(objectList, lightList, indirect_ray) / PDF) * u);
+						indirect_col = indirect_col + ((tracePath(objectList, lightList, indirect_ray, depth +1) / PDF) * u);
 						//indirect_col.printCoords();
 					}
 					indirect_col = indirect_col / N;

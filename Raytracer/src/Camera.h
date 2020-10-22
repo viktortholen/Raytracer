@@ -19,9 +19,9 @@ public:
 	void createImage(const std::string &filename, const std::string &colorSpace);
 	void openImage(std::string filename);
 	ColorDbl renderSample(const std::list<Object*>* objectList, const std::list<Mesh*>* lightList, Ray* ray, int samples, volatile std::atomic<std::size_t>* at_i, volatile std::atomic<std::size_t>* at_j);
-	ColorDbl tracePath(const std::list<Object*>& objectList, const std::list<Mesh*> lightList, Ray& ray);
+	ColorDbl tracePath(const std::list<Object*> objectList, const std::list<Mesh*> lightList, Ray& ray, const int& depth);
 	
-	bool objectIntersect(const std::list<Object*>& objectList, Ray& ray, Object*& hitObject, float& t_closest) const;
+	bool objectIntersect(const std::list<Object*> objectList, Ray& ray, Object*& hitObject, float& t_closest) const;
 private:
 	const int width = 800;
 	const int height = 800;
