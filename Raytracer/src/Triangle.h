@@ -4,7 +4,6 @@
 #include "Ray.h"
 #include "Vec4.h"
 #include "ColorDbl.h"
-#include "Direction.h"
 
 class Ray; //forward declaration
 

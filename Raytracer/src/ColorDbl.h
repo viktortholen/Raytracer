@@ -6,7 +6,7 @@ public:
 	ColorDbl() = default;
 	ColorDbl(const double &r, const double &g, const double &b) 
 		:color{r,g,b} {}
-	glm::vec3 getColorVec() {
+	glm::vec3 getColorVec() const{
 		return color;
 	}
 	ColorDbl(const ColorDbl &other)
@@ -59,7 +59,7 @@ public:
 		tmp.color[2] /= i;
 		return tmp;
 	}
-	void printCoords()
+	void printCoords() const
 	{
 		std::cout << "\nr: " << color[0] << ", g: " << color[1] << " , b: " << color[2];
 	}

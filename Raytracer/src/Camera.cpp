@@ -8,11 +8,14 @@ Camera::Camera() {
 	}
 }
 Camera::~Camera() {
+
 	for (int i = 0; i < height; i++)
 		delete[] pixel_array[i];
 	delete[] pixel_array;
 }
 void Camera::render(const Scene& scene) {
+	using namespace std::literals::chrono_literals;
+	auto start = std::chrono::high_resolution_clock::now();
 
 	//for loop för att gå igenom pixlar - skjuta Ray genom alla
 	int quad_size_y = (width / 2) + 1;
@@ -22,11 +25,11 @@ void Camera::render(const Scene& scene) {
 	float percentage;
 	int samples = 10;
 	
-	const std::vector<Object*> objectList = scene.getObjectList();
-	const std::vector<Mesh*> lightList = scene.getLightList();
+	const std::list<Object*> objectList = scene.getObjectList();
+	const std::list<Mesh*> lightList = scene.getLightList();
 
-	
-	for (int i = 0; i < height; i++)
+	std::condition_variable cvResults;
+	for (int i = 0; i < width; i++)
 	{
 		//LOG progress:
 		percentage = (static_cast<float>((i + 1)) / width) * 100;
@@ -34,35 +37,70 @@ void Camera::render(const Scene& scene) {
 		/******************************************/
 
 
-		for (int j = 0; j < width; j++)
+		for (int j = 0; j < height; j++)
 		{
-			float ry = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-			float rz = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-			Vec4 pixelIntersection{ 0.0, (j - quad_size_y + ry) * delta, (i - quad_size_z + rz) * delta };
-			Vec4 dir = pixelIntersection - e1;
-			Ray ray{ e1, dir.normalize() };
-			//#define INDIRECT
-			//#define MULTI_THREADING
 
+			#define INDIRECT
+			#define MULTI_THREADING
 			#ifdef MULTI_THREADING
-				future_vec.emplace_back(std::async(std::launch::async, &Camera::renderSample, this, &objectList, &lightList, &ray, samples, i, j));
-				//const auto fut = std::async(std::launch::async, &Camera::renderSample, this, &objectList, &lightList, &ray, samples, i, j);
+
+			
+			auto fut = std::async(std::launch::async,
+				[=, &objectList, &lightList]() -> ColorDbl
+					{
+						ColorDbl col;
+						//LOG("thread id: "<<std::this_thread::get_id()<<std::endl)
+						for (int k = 0; k < samples; k++)
+						{
+							float ry = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+							float rz = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+							Vec4 pixelIntersection{ 0.0, (j - quad_size_y + ry) * delta, (i - quad_size_z + rz) * delta };
+							Vec4 dir = pixelIntersection - e1;
+							Ray ray{ e1, dir.normalize() };
+							col = col + tracePath(objectList, lightList, ray);
+						}
+						col = col / static_cast<float>(samples);
+						//LOG(*at_i << " " << *at_j << std::endl)
+						//std::lock_guard<std::mutex> lock(sample_mutex);
+						pixel_array[i][j].setColor(col);
+
+						return col;
+
+					});
+			{
+				std::lock_guard<std::mutex> lock(sample_mutex);
+				future_vec.push_back(std::move(fut));
+			}
+
+
 			#else
+			ColorDbl col;
+			//LOG("thread id: "<<std::this_thread::get_id()<<std::endl)
+			for (int k = 0; k < samples; k++)
+			{
+				float ry = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+				float rz = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+				Vec4 pixelIntersection{ 0.0, (j - quad_size_y + ry) * delta, (i - quad_size_z + rz) * delta };
+				Vec4 dir = pixelIntersection - e1;
+				Ray ray{ e1, dir.normalize() };
+				col = col + tracePath(objectList, lightList, ray);
+			}
+			//col = tracePath(objectList, lightList, ray);
 
-				ColorDbl col;
-
-				for (int k = 0; k < samples; k++)
-				{
-					col = col + tracePath(objectList, lightList, ray);
-
-				}
-
-				col = col / samples;
-				pixel_array[i][j].setColor(col);
+			col = col / static_cast<int>(samples);
+			//LOG(*at_i << " " << *at_j << std::endl)
+			//std::lock_guard<std::mutex> lock(sample_mutex);
+			pixel_array[i][j].setColor(col);
 			#endif
 		}
 	}
-	std::cout << "Finished rendering...\n";
+	auto end = std::chrono::high_resolution_clock::now();
+
+	std::chrono::duration<float> duration = end - start;
+	std::cout << "\n******************************\n";
+	std::cout<<"-Finished rendering-\n Time: " << duration.count() << "s";
+	std::cout << "\n******************************\n";
+
 	//for (int i = 0; i < 800; i++)
 	//{
 	//	for (int j = 0; j < 800; j++)
@@ -76,41 +114,52 @@ void Camera::render(const Scene& scene) {
 	//}
 }
 
-ColorDbl Camera::renderSample(const std::vector<Object*>* objectList, const std::vector<Mesh*>* lightList, Ray* ray, int samples, int i, int j)
+ColorDbl Camera::renderSample(const std::list<Object*>* objectList, const std::list<Mesh*>* lightList, Ray* ray, int samples, volatile std::atomic<std::size_t>* at_i, volatile std::atomic<std::size_t>* at_j)
 {
 	ColorDbl col;
-	//std::lock_guard<std::mutex> lock(sample_mutex);
+	
 	//LOG("thread id: "<<std::this_thread::get_id()<<std::endl)
-	for  (int k = 0; k < samples; k++)
-	{
-		col = col + tracePath(*objectList, *lightList, *ray);
-	}
-	//col = tracePath(*objectList, *lightList, *ray);
+	//for  (int k = 0; k < samples; k++)
+	//{
+	//	col = col + tracePath(*objectList, *lightList, *ray);
+	//}
+	col = tracePath(*objectList, *lightList, *ray);
+	
 	col = col / static_cast<int>(samples);
-	//LOG(*samples << " " i << " " << j << std::endl)
-	pixel_array[i][j].setColor(col);
+	//LOG(*at_i << " " << *at_j << std::endl)
+	std::lock_guard<std::mutex> lock(sample_mutex);
+	pixel_array[*at_i][*at_j].setColor(col);
+
 	return col;
 }
-bool Camera::objectIntersect(const std::vector<Object*>& objectList, Ray& ray, Object*& hitObject, float& t_closest) const
+bool Camera::objectIntersect(const std::list<Object*>& objectList, Ray& ray, Object*& hitObject, float& t_closest) const
 {
-	//std::lock_guard<std::mutex> lock(sample_mutex);
-	hitObject = nullptr;
-	float obj_closest = INFINITY_FLOAT;
-	for (std::vector<Object*>::const_iterator it = objectList.cbegin(); it != objectList.cend(); it++)
-	{
-		
-		if ((*it)->castRay(ray, t_closest) && t_closest < obj_closest) //object is hit
-		{
-			hitObject = (*it);
-			obj_closest = t_closest;
-		}
-	}
-	if (hitObject == nullptr)
-		return false;
 
+		hitObject = nullptr;
+		float obj_closest = INFINITY_FLOAT;
+		try {
+
+		for (std::list<Object*>::const_iterator it = objectList.cbegin(); it != objectList.cend(); it++)
+		{
+			if ((*it)->castRay(ray, t_closest) && t_closest < obj_closest) //object is hit
+			{
+				hitObject = (*it);
+				obj_closest = t_closest;
+			}
+}
+		}
+		catch (std::bad_array_new_length& e)
+		{
+			std::cout << "Exception at pixel_array, code:" << e.what() << std::endl;
+		}
+		if (hitObject == nullptr)
+			return false;
+
+		
+	
 	return true;
 }
-ColorDbl Camera::tracePath(const std::vector<Object*>& objectList, const std::vector<Mesh*>& lightList, Ray& ray)
+ColorDbl Camera::tracePath(const std::list<Object*>& objectList, const std::list<Mesh*> lightList, Ray& ray)
 {
 
 	ColorDbl col;
@@ -150,14 +199,14 @@ ColorDbl Camera::tracePath(const std::vector<Object*>& objectList, const std::ve
 					std::uniform_real_distribution<float> dis(0.0, 1.0);
 
 					//Direct lighting:
-					for (std::vector<Mesh*>::const_iterator lights = lightList.cbegin(); lights != lightList.cend(); lights++)
+					for (std::list<Mesh*>::const_iterator lights = lightList.cbegin(); lights != lightList.cend(); lights++)
 					{
 						//*****move******
-						const std::vector<Triangle*> tlist = (*lights)->getTriangleList();
+						const std::list<Triangle*> tlist = (*lights)->getTriangleList();
 						Material emission_mat = (*lights)->getMaterial();
 						for (int j = 0; j < SHADOW_RAY_COUNT; j++)
 						{
-							for (std::vector<Triangle*>::const_iterator t = tlist.cbegin(); t != tlist.cend(); t++)
+							for (std::list<Triangle*>::const_iterator t = tlist.cbegin(); t != tlist.cend(); t++)
 							{
 								
 								//Triangle* t = tlist.front() + i;
@@ -281,7 +330,7 @@ void Camera::createImage(const std::string &filename,const std::string &colorSpa
 		{
 			for (int j = width - 1; j >= 0; j--)
 			{
-				glm::vec3 rgb = pixel_array[i][j].getColor();
+				glm::vec3 rgb = pixel_array[i][j].getColorVec();
 				if (rgb[0] > imax)
 					imax = rgb[0];
 				if (rgb[1] > imax)
@@ -295,7 +344,7 @@ void Camera::createImage(const std::string &filename,const std::string &colorSpa
 		{
 			for (int j = width - 1; j >= 0; j--)
 			{
-				glm::vec3 rgb = pixel_array[i][j].getColor();
+				glm::vec3 rgb = pixel_array[i][j].getColorVec();
 				int r = static_cast<int>(rgb[0] * (255.99 / imax));
 				int g = static_cast<int>(rgb[1] * (255.99 / imax));
 				int b = static_cast<int>(rgb[2] * (255.99 / imax));
@@ -317,7 +366,7 @@ void Camera::createImage(const std::string &filename,const std::string &colorSpa
 		{
 			for (int j = width - 1; j >= 0; j--)
 			{
-				glm::vec3 rgb = pixel_array[i][j].getColor();
+				glm::vec3 rgb = pixel_array[i][j].getColorVec();
 				double sr = sqrt(rgb[0]);
 				double sg = sqrt(rgb[1]);
 				double sb = sqrt(rgb[2]);

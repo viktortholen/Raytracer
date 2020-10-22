@@ -10,7 +10,7 @@ public:
 		:color{_color}, ray{&_ray}{}
 
 	~Pixel() {
-		delete ray;
+
 	}
 	Pixel(const Pixel& other) { //copy
 		color = other.color;
@@ -23,13 +23,17 @@ public:
 		return *this;
 	}
 
-	void setColor(ColorDbl& rgb)
+	void setColor(const ColorDbl& rgb)
 	{
 		color = rgb;
 	}
-	glm::vec3 getColor()
+	glm::vec3 getColorVec() const
 	{
 		return color.getColorVec();
+	}
+	ColorDbl getColor() const
+	{
+		return color;
 	}
 
 private:

@@ -3,19 +3,23 @@
 
 Scene::~Scene()
 {
-	//for (auto it = objectList.begin(); it != objectList.end(); ++it) {
-	//	delete* it;
-	//}
+	for (auto it = objectList.begin(); it != objectList.end(); ++it) {
+		delete* it;
+	}
 	objectList.clear();
-	//for (std::vector<Mesh*>::iterator it = lightList.begin(); it != lightList.end(); ++it) {
-	//	delete* it;
+	//for (std::list<Mesh*>::iterator it = lightList.begin(); it != lightList.end(); ++it) {
+	//	if (*it != nullptr)
+	//	{
+	//		delete* it;
+	//	}
+	//	
 	//}
 	lightList.clear();
 }
-std::vector<Object*> Scene::getObjectList() const {
+std::list<Object*> Scene::getObjectList() const {
 	return objectList;
 }
-std::vector<Mesh*> Scene::getLightList() const {
+std::list<Mesh*> Scene::getLightList() const {
 	return lightList;
 }
 void Scene::createScene() {
@@ -26,8 +30,8 @@ void Scene::createScene() {
 	createTetra(Vec4(6, 0, -3), 2.0f, refl_mat);
 	createCube(Vec4(6, -2, -3), 2.0f, diff_mat);
 	createRoom(diff_mat);
-	createPlane(Vec4(6, 0, 3), 1.0f, emission_mat);
-
+	//createPlane(Vec4(6, -2, 3), 2.0f, emission_mat);
+	//createPlane(Vec4(6, 2, 3), 2.0f, emission_mat);
 	createSphere(Vec4(6, 3, -3), 1, refl_mat);
 
 	

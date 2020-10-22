@@ -165,7 +165,6 @@
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\ColorDbl.h" />
-    <ClInclude Include="src\Direction.h" />
     <ClInclude Include="src\Includer.h" />
     <ClInclude Include="src\Object.h" />
     <ClInclude Include="src\Pixel.h" />

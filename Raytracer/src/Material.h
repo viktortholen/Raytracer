@@ -20,5 +20,5 @@ struct Material {
 	ColorDbl diff_col;
 	//ColorDbl BRDF;
 	float absorption = 0.9f;
-	float intensity = 100.0f;
+	float intensity = 10.0f;
 };

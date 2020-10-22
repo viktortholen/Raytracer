@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <utility>
 #include <math.h>
-#include <vector>
+#include <list>
 #include <iomanip>
 #include <iterator>
 #include <fstream>
@@ -18,3 +18,5 @@
 #include <random>
 #include <future>
 #include <mutex>
+
+static std::mutex sample_mutex;

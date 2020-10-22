@@ -9,7 +9,7 @@ int main() {
 
 	Camera camera{};
 	camera.render(theScene);
-	camera.createImage("picture.ppm", "LOG");
+	camera.createImage("picture.ppm", "LINEAR");
 
 	return 0;
 }
