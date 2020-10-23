@@ -12,6 +12,18 @@ class Scene {
 public:
 	Scene() = default;
 	~Scene();
+	Scene& operator=(const Scene& s)
+	{
+		Scene tmp{ s };
+		std::swap(tmp.lightList, lightList);
+		std::swap(tmp.objectList, objectList);
+
+	}
+	Scene(const Scene& s)
+	{
+		lightList = s.lightList;
+		objectList = s.objectList;
+	}
 	void createScene();
 	void createRoom(const Material& m);
 
@@ -19,10 +31,10 @@ public:
 	void createSphere(const Vec4& p, const float& size, const Material& m);
 	void createCube(const Vec4& p, const float& size, const Material& m);
 	void createPlane(const Vec4& p, const float& size, const Material& m);
-	std::list<Object*> getObjectList() const;
-	std::list<Mesh*> getLightList() const;
+	std::vector<std::shared_ptr<Object>> getObjectList() const;
+	std::vector<std::shared_ptr<Mesh>> getLightList() const;
 private:
-	std::list<Object*> objectList;
-	std::list<Mesh*> lightList;
+	std::vector<std::shared_ptr<Object>> objectList;
+	std::vector<std::shared_ptr<Mesh>> lightList;
 
 };

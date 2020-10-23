@@ -3,11 +3,12 @@
 
 Scene::~Scene()
 {
-	for (auto it = objectList.begin(); it != objectList.end(); ++it) {
-		delete* it;
-	}
+	//std::cout << "\ndeleting scene";
+	//for (auto it = objectList.begin(); it != objectList.end(); ++it) {
+	//	delete& it;
+	//}
 	objectList.clear();
-	//for (std::list<Mesh*>::iterator it = lightList.begin(); it != lightList.end(); ++it) {
+	//for (std::vector<Mesh*>::iterator it = lightList.begin(); it != lightList.end(); ++it) {
 	//	if (*it != nullptr)
 	//	{
 	//		delete* it;
@@ -16,10 +17,10 @@ Scene::~Scene()
 	//}
 	lightList.clear();
 }
-std::list<Object*> Scene::getObjectList() const {
+std::vector<std::shared_ptr<Object>> Scene::getObjectList() const {
 	return objectList;
 }
-std::list<Mesh*> Scene::getLightList() const {
+std::vector<std::shared_ptr<Mesh>> Scene::getLightList() const {
 	return lightList;
 }
 void Scene::createScene() {
@@ -33,7 +34,7 @@ void Scene::createScene() {
 	createPlane(Vec4(6, -2, 3), 2.0f, emission_mat);
 	createPlane(Vec4(6, 2, 3), 2.0f, emission_mat);
 	createSphere(Vec4(6, 3, -3), 1, refl_mat);
-
+	
 	
 
 }
@@ -47,9 +48,12 @@ void Scene::createPlane(const Vec4& p, const float& size, const Material& m)
 	Mesh* light = new Mesh(m);
 	light->addTriangleToMesh(new Triangle(v0, v1, v3, m.diff_col));
 	light->addTriangleToMesh(new Triangle(v1, v2, v3, m.diff_col));
-	//Light* light = new Light(Vec4(5, 0, 3), 1.0f); //point
-	lightList.push_back(light);
-	objectList.push_back(light);
+	lightList.push_back(std::shared_ptr<Mesh>(light));
+
+	Mesh* light_obj = new Mesh{m};
+	light_obj->addTriangleToMesh(new Triangle(v0, v1, v3, m.diff_col));
+	light_obj->addTriangleToMesh(new Triangle(v1, v2, v3, m.diff_col));
+	objectList.push_back(std::shared_ptr<Mesh>(light_obj));
 
 }
 void Scene::createTetra(const Vec4& p, const float& size, const Material& m)
@@ -61,12 +65,12 @@ void Scene::createTetra(const Vec4& p, const float& size, const Material& m)
 	tetra->addTriangleToMesh(new Triangle(Vec4(p.coords[0], p.coords[1], p.coords[2] + size / 2), Vec4(p.coords[0] - size / 2, p.coords[1] + size / 2, p.coords[2] - size / 2), Vec4(p.coords[0] - size / 2, p.coords[1] - size / 2, p.coords[2] - size / 2), m.diff_col));
 	tetra->addTriangleToMesh(new Triangle(Vec4(p.coords[0], p.coords[1], p.coords[2] + size / 2), Vec4(p.coords[0] - size / 2, p.coords[1] - size / 2, p.coords[2] - size / 2), Vec4(p.coords[0] + size / 2, p.coords[1], p.coords[2] - size / 2), m.diff_col));
 	tetra->addTriangleToMesh(new Triangle(Vec4(p.coords[0], p.coords[1], p.coords[2] + size / 2), Vec4(p.coords[0] + size / 2, p.coords[1], p.coords[2] - size / 2), Vec4(p.coords[0] - size / 2, p.coords[1] + size / 2, p.coords[2] - size / 2), m.diff_col));
-	objectList.push_back(tetra);
+	objectList.push_back(std::shared_ptr<Object>(tetra));
 }
 void Scene::createSphere(const Vec4& p, const float& size, const Material& m)
 {
 	Sphere* sphere = new Sphere(size, p, m);
-	objectList.push_back(sphere);
+	objectList.push_back(std::shared_ptr<Sphere>(sphere));
 }
 void Scene::createCube(const Vec4& p, const float& size, const Material& m)
 {
@@ -100,7 +104,7 @@ void Scene::createCube(const Vec4& p, const float& size, const Material& m)
 	cube->addTriangleToMesh(new Triangle(v7, v4, v0, m.diff_col));
 	cube->addTriangleToMesh(new Triangle(v7, v0, v3, m.diff_col));
 
-	objectList.push_back(cube);
+	objectList.push_back(std::shared_ptr<Object>(cube));
 }
 void Scene::createRoom(const Material& m)
 {
@@ -115,9 +119,9 @@ void Scene::createRoom(const Material& m)
 	room->addTriangleToMesh(new Triangle(Vec4(5, 0, 5), Vec4(0, -6, 5), Vec4(-3, 0, 5), ColorDbl(255, 255, 255)));
 
 	//Golv		 
-	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(0, 6, -5), Vec4(-3, 0, -5), ColorDbl(255, 255, 200)));
-	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(10, 6, -5), Vec4(0, 6, -5), ColorDbl(255, 255, 200)));
-	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(13, 0, -5), Vec4(10, 6, -5), ColorDbl(255, 255, 200)));
+	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(0, 6, -5), Vec4(-3, 0, -5), ColorDbl(255, 255, 255)));
+	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(10, 6, -5), Vec4(0, 6, -5), ColorDbl(255, 255, 255)));
+	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(13, 0, -5), Vec4(10, 6, -5), ColorDbl(255, 255, 255)));
 
 	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(10, -6, -5), Vec4(13, 0, -5), ColorDbl(255, 255, 255)));
 	room->addTriangleToMesh(new Triangle(Vec4(5, 0, -5), Vec4(0, -6, -5), Vec4(10, -6, -5), ColorDbl(255, 255, 255)));
@@ -143,6 +147,6 @@ void Scene::createRoom(const Material& m)
 	room->addTriangleToMesh(new Triangle(Vec4(0, -6, 5), Vec4(0, -6, -5), Vec4(-3, 0, -5), ColorDbl(255, 255, 255)));
 	room->addTriangleToMesh(new Triangle(Vec4(0, -6, 5), Vec4(-3, 0, -5), Vec4(-3, 0, 5), ColorDbl(255, 255, 255)));
 
-	objectList.push_back(room);
+	objectList.push_back(std::shared_ptr<Object>(room));
 
 }
