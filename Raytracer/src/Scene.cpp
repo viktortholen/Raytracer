@@ -24,15 +24,15 @@ std::vector<std::shared_ptr<Mesh>> Scene::getLightList() const {
 	return lightList;
 }
 void Scene::createScene() {
-	Material diff_mat{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.9f };
+	Material diff_mat{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.950f };
 	Material refl_mat{ MaterialType::REFLECTIVE_LAMBERTIAN, ColorDbl(255,255,255), 0.1f };
 	Material emission_mat{ MaterialType::EMISSION, ColorDbl(255,255,255), 0.0f};
 
 	createTetra(Vec4(6, 0, -3), 2.0f, refl_mat);
 	createCube(Vec4(6, -2, -3), 2.0f, diff_mat);
 	createRoom(diff_mat);
-	createPlane(Vec4(6, -2, 3), 2.0f, emission_mat);
-	createPlane(Vec4(6, 2, 3), 2.0f, emission_mat);
+	createPlane(Vec4(6, -2, 4.9), 2.0f, emission_mat);
+	createPlane(Vec4(6, 2, 4.9), 2.0f, emission_mat);
 	createSphere(Vec4(6, 3, -3), 1, refl_mat);
 	
 	

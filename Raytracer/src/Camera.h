@@ -33,4 +33,5 @@ private:
 	const Vec4 e2{ -2,0,0 };
 	bool eyePoint = 0;
 	std::vector<std::future<ColorDbl>> future_vec;
+
 };

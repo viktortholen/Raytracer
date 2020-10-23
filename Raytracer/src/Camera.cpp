@@ -1,5 +1,6 @@
 #pragma once
 #include "Camera.h"
+int max_depth;
 
 Camera::Camera() {
 	pixel_array = new Pixel*[height];
@@ -16,12 +17,12 @@ Camera::~Camera() {
 void Camera::render(const Scene& scene) {
 
 	//define options:
-	//#define INDIRECT
+	#define INDIRECT
 	#define MULTI_THREADING
 	#define LOGGING
 	int samples = 10;
 	//*****************
-
+	max_depth = 0;
 	using namespace std::literals::chrono_literals;
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -102,9 +103,13 @@ void Camera::render(const Scene& scene) {
 	std::cout << "\nFinishing...\n";
 
 	auto wait_start = std::chrono::high_resolution_clock::now();
-
+	int size = future_vec.size();
 	for (int i = 0; i < future_vec.size(); i++)
 	{
+		if (i % 1000 == 0)
+		{
+			std::cout << "\rWaiting: " <<i << " / "<< size << std::fixed << std::setprecision(5) << std::left << std::setw(7);
+		}
 		future_vec[i].wait();
 
 	}
@@ -119,25 +124,6 @@ void Camera::render(const Scene& scene) {
 
 
 }
-
-//ColorDbl Camera::renderSample(const std::vector<Object*>* objectList, const std::vector<Mesh*>* lightList, Ray* ray, int samples, volatile std::atomic<std::size_t>* at_i, volatile std::atomic<std::size_t>* at_j)
-//{
-//	ColorDbl col;
-//	
-//	//LOG("thread id: "<<std::this_thread::get_id()<<std::endl)
-//	//for  (int k = 0; k < samples; k++)
-//	//{
-//	//	col = col + tracePath(*objectList, *lightList, *ray);
-//	//}
-//	col = tracePath(*objectList, *lightList, *ray);
-//	
-//	col = col / static_cast<int>(samples);
-//	//LOG(*at_i << " " << *at_j << std::endl)
-//	std::lock_guard<std::mutex> lock(sample_mutex);
-//	pixel_array[*at_i][*at_j].setColor(col);
-//
-//	return col;
-//}
 bool Camera::objectIntersect(const std::vector<std::shared_ptr<Object>> &objectList, Ray& ray, std::shared_ptr<Object>& hitObject, float& t_closest) const
 {
 	//std::lock_guard<std::mutex> lock(sample_mutex);
@@ -163,12 +149,18 @@ bool Camera::objectIntersect(const std::vector<std::shared_ptr<Object>> &objectL
 }
 ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectList, const std::vector<std::shared_ptr<Mesh>>& lightList, Ray& ray, const int& depth)
 {
-	//LOG("depth: " <<depth<<"\n")
+	if (depth > max_depth)
+	{
+		max_depth = depth;
+		//LOG("max_depth: " <<max_depth<<"\n")
+	}
+
 	ColorDbl col;
 	std::shared_ptr<Object> hitObject = nullptr;
 	//loop through objects instead of meshes (includes spheres)
 	float t_temp = INFINITY_FLOAT;
 	const int SHADOW_RAY_COUNT = 5;
+	const int N = 50;
 	if (objectIntersect(objectList, ray, hitObject, t_temp))
 	{
 		Material hitMat = hitObject->getMaterial();
@@ -177,150 +169,159 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 		Vec4 norm_hit = ray.getHitNormal().normalize();
 
 		Vec4 hitPoint = ray.getOffsetEndPointAlongNormal(EPSILON);
-		float T = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-		if (T < 1 - hitMat.absorption || depth < EPSILON)
+
+		switch (hitMat.type)
 		{
-
-			switch (hitMat.type)
+			case(MaterialType::REFLECTIVE_LAMBERTIAN): //perfect mirror
 			{
-				case(MaterialType::REFLECTIVE_LAMBERTIAN): //perfect mirror
+
+				Vec4 refl_dir = dir.reflect(norm_hit).normalize(); //perfect reflection
+				//trace new ray in the reflection direction:
+				Ray refl_ray{ hitPoint, refl_dir };
+
+				col = tracePath(objectList, lightList, refl_ray, depth);
+				break;
+			}
+			case(MaterialType::DIFFUSE_LAMBERTIAN): //
+			{
+				std::random_device rd;  //Will be used to obtain a seed for the random number engine
+				std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+				std::uniform_real_distribution<float> dis(0.0, 1.0);
+				float P = dis(gen);
+
+				if (P > 1 - hitMat.absorption && depth > EPSILON)
+					return ColorDbl{};
+
+				float radiance = 0.0f;
+				ColorDbl indirect_col;
+
+
+				//Direct lighting:
+				for (const auto light: lightList)
 				{
 
-					Vec4 refl_dir = dir.reflect(norm_hit).normalize(); //perfect reflection (whitted)
-					//trace new ray in the reflection direction:
-					Ray refl_ray{ hitPoint, refl_dir };
-
-					col = tracePath(objectList, lightList, refl_ray, depth + 1);
-					break;
-				}
-				case(MaterialType::DIFFUSE_LAMBERTIAN): //
-				{
-					float radiance = 0.0f;
-					ColorDbl indirect_col;
-					std::random_device rd;  //Will be used to obtain a seed for the random number engine
-					std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-					std::uniform_real_distribution<float> dis(0.0, 1.0);
-
-					//Direct lighting:
-					for (const auto light: lightList)
+					//*****move******
+					const auto tlist = light->getTriangleList();
+					Material emission_mat = light->getMaterial();
+					for (int j = 0; j < SHADOW_RAY_COUNT; j++)
 					{
-
-						//*****move******
-						const auto tlist = light->getTriangleList();
-						Material emission_mat = light->getMaterial();
-						for (int j = 0; j < SHADOW_RAY_COUNT; j++)
+						for (const auto t: tlist)
 						{
-							for (const auto t: tlist)
-							{
 								
-								//Triangle* t = tlist.front() + i;
-								float A = t->calculateArea();
-								//LOG("area: " << A << "\n")
-								float pdf = 1 / A;
-								float u = dis(gen);
-								float v = dis(gen);
-								Vec4 q = t->pickRandomPoint(u, v);
+							//Triangle* t = tlist.front() + i;
+							float A = t->calculateArea();
+							//LOG("area: " << A << "\n")
+							float pdf = 1 / A;
+							float u = dis(gen);
+							float v = dis(gen);
+							Vec4 q = t->pickRandomPoint(u, v);
 
-								Vec4 lightDir = q - hitPoint;
-								Ray shadow_ray{ hitPoint, lightDir.normalize() };
+							Vec4 lightDir = q - hitPoint;
+							Ray shadow_ray{ hitPoint, lightDir.normalize() };
 
-								float BRDF = lightDir.normalize().dotProduct(norm_hit);
+							float BRDF = lightDir.normalize().dotProduct(norm_hit);
 
-								float lightDistance = lightDir.dotProduct(lightDir);
+							float lightDistance = lightDir.dotProduct(lightDir);
 
-								std::shared_ptr<Object> shadowObject = nullptr;
-								float t_shadow = INFINITY_FLOAT;
-								//check normal of object compared with shadowray direction and rule out if its impossible to hit.
-								if (BRDF > EPSILON)
+							std::shared_ptr<Object> shadowObject = nullptr;
+							float t_shadow = INFINITY_FLOAT;
+							//check normal of object compared with shadowray direction and rule out if its impossible to hit.
+							if (BRDF > EPSILON)
+							{
+								//if object is not in shadow -> calculate radiance from the point.
+								if (!(objectIntersect(objectList, shadow_ray, shadowObject, t_shadow) && t_shadow * t_shadow < lightDistance)) //causes undefined - objectlist
 								{
-									//if object is not in shadow -> calculate radiance from the point.
-									if (!(objectIntersect(objectList, shadow_ray, shadowObject, t_shadow) && t_shadow * t_shadow < lightDistance)) //causes undefined - objectlist
-									{
-										Vec4 Sk = q - hitPoint;
-										float dk = Sk.euclideanDist();
-										Vec4 Na =t->getNormal();
-										Vec4 Nx = norm_hit;
-										float alpha = -Sk.dotProduct(Na) / dk;
-										float beta = Sk.dotProduct(Nx) / dk;
-										radiance += emission_mat.intensity * BRDF * ((alpha * beta) / (dk*dk)) * A / pdf; //no Vk 
+									Vec4 Sk = q - hitPoint;
+									float dk = Sk.euclideanDist();
+									Vec4 Na =t->getNormal();
+									Vec4 Nx = norm_hit;
+									float alpha = -Sk.dotProduct(Na) / dk;
+									float beta = Sk.dotProduct(Nx) / dk;
+									radiance += emission_mat.intensity * BRDF * ((alpha * beta) / (dk*dk)) * A / pdf; //no Vk 
 
-									}
 								}
 							}
 						}
 					}
-					radiance = radiance / SHADOW_RAY_COUNT;
+				}
+				radiance = radiance / SHADOW_RAY_COUNT;
 				
-					//Monte Carlo things: (INDIRECT LIGHT)
+				//Monte Carlo things: (INDIRECT LIGHT)
 					
-					#ifdef INDIRECT
-					//local coordinate system directions for hitpoint:
-					Vec4 Y;
-					if (fabs(norm_hit.coords[0] > fabs(norm_hit.coords[1])))
-					{
-						Y = Vec4(norm_hit.coords[2], 0.0f, -norm_hit.coords[0]).normalize();
-					}
-					else
-					{
-						Y = Vec4(0.0, -norm_hit.coords[2], norm_hit.coords[1]).normalize();
-					}
-					Vec4 X = norm_hit.crossProduct(X);
-					Vec4 Z = norm_hit;
-
-					const float PDF = 1 / (2.0f * static_cast<float>(M_PI));
-
-					const int N = 10;
-					for (int i = 0; i < N; i++)
-					{
-						//float u = dis(gen);
-						//float v = dis(gen);
-						//float r_phi = u * 2.0f * static_cast<float>(M_PI);
-						//float r_theta = acosf(sqrtf(v));
-						////float r_theta = acosf(1 - 2 * v);
-
-
-						//Vec4 randHemiDir = { sinf(r_phi) * sinf(r_theta), sinf(r_phi) * cosf(r_theta), sinf(r_theta) };
-						float u = dis(gen);
-						float v = dis(gen);
-						float r_theta = sqrtf(1 - u*u);
-						float r_phi = 2.0f * static_cast<float>(M_PI)* v;
-
-						Vec4 randHemiDir = { r_theta * cosf(r_phi) ,u, r_theta * sinf(r_phi) };
-
-						//transform to world coords
-						float x = randHemiDir.coords[0] * X.coords[0] + randHemiDir.coords[1] * Y.coords[0] + randHemiDir.coords[2] * Z.coords[0];
-						float y = randHemiDir.coords[0] * X.coords[1] + randHemiDir.coords[1] * Y.coords[1] + randHemiDir.coords[2] * Z.coords[1];
-						float z = randHemiDir.coords[0] * X.coords[2] + randHemiDir.coords[1] * Y.coords[2] + randHemiDir.coords[2] * Z.coords[2];
-
-						//trace path
-						Vec4 M = { x,y,z,1 };
-						//M.printCoords();
-						Ray indirect_ray = { hitPoint, M };
-						//M.printCoords();
-						indirect_col = indirect_col + ((tracePath(objectList, lightList, indirect_ray, depth +1) / PDF) * u);
-						//indirect_col.printCoords();
-					}
-					indirect_col = indirect_col / N;
-					#endif // DEBUG
-					//LOG("radiance: "<< radiance << std::endl)
-					col = (hitColor * radiance) +indirect_col;
-					//col.printCoords();
-					//col = indirect_col;
-					break;
-
-				}
-				case(MaterialType::EMISSION):
+				#ifdef INDIRECT
+				//local coordinate system directions for hitpoint:
+				Vec4 Y;
+				if (fabs(norm_hit.coords[0] > fabs(norm_hit.coords[1])))
 				{
-					//LOG("hit light \n")
-					col = ColorDbl(255, 255, 255);
-					break;
+					Y = Vec4(norm_hit.coords[2], 0.0f, -norm_hit.coords[0]).normalize();
 				}
-				default:
+				else
 				{
-					break;
+					Y = Vec4(0.0, -norm_hit.coords[2], norm_hit.coords[1]).normalize();
 				}
-			break;
+				Vec4 X = norm_hit.crossProduct(X);
+				Vec4 Z = norm_hit;
+
+				const float PDF = 1 / (2.0f * static_cast<float>(M_PI));
+
+					
+				for (int i = 0; i < N; i++)
+				{
+					//float u = dis(gen);
+					//float v = dis(gen);
+					//float r_phi = u * 2.0f * static_cast<float>(M_PI);
+					//float r_theta = acosf(sqrtf(v));
+					//float r_theta = acosf(1 - 2 * v);
+
+
+					//Vec4 randHemiDir = { sinf(r_phi) * sinf(r_theta), sinf(r_phi) * cosf(r_theta), sinf(r_theta) };
+					float u = dis(gen);
+					float v = dis(gen);
+
+					float terminate = (2.0f * static_cast<float>(M_PI)) / P * u;
+					if (terminate > 2.0f * static_cast<float>(M_PI))
+					{
+						break;
+					}
+
+					float r_theta = sqrtf(u);
+					float r_phi = 2.0f * static_cast<float>(M_PI)* v;
+
+					Vec4 randHemiDir = { r_theta * cosf(r_phi) ,u, r_theta * sinf(r_phi) };
+
+					//transform to world coords
+					float x = randHemiDir.coords[0] * X.coords[0] + randHemiDir.coords[1] * Y.coords[0] + randHemiDir.coords[2] * Z.coords[0];
+					float y = randHemiDir.coords[0] * X.coords[1] + randHemiDir.coords[1] * Y.coords[1] + randHemiDir.coords[2] * Z.coords[1];
+					float z = randHemiDir.coords[0] * X.coords[2] + randHemiDir.coords[1] * Y.coords[2] + randHemiDir.coords[2] * Z.coords[2];
+
+					//trace path
+					Vec4 M = { x,y,z,1 };
+					//M.printCoords();
+					Ray indirect_ray = { hitPoint, M };
+					//M.printCoords();
+					indirect_col = indirect_col + ((tracePath(objectList, lightList, indirect_ray, depth +1) / PDF) * P);
+					//indirect_col.printCoords();
+				}
+				indirect_col = indirect_col / N;
+				#endif // DEBUG
+				//LOG("radiance: "<< radiance << std::endl)
+				col = (hitColor * radiance) +indirect_col;
+				//col.printCoords();
+				//col = indirect_col;
+				break;
+
 			}
+			case(MaterialType::EMISSION):
+			{
+				//LOG("hit light \n")
+				return ColorDbl(255, 255, 255);
+			}
+			default:
+			{
+				break;
+			}
+		break;
+			
 
 		}
 	}
