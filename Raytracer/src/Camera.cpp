@@ -1,6 +1,6 @@
 #pragma once
 #include "Camera.h"
-int max_depth;
+
 
 Camera::Camera() {
 	pixel_array = new Pixel*[height];
@@ -14,15 +14,17 @@ Camera::~Camera() {
 		delete[] pixel_array[i];
 	delete[] pixel_array;
 }
+void Camera::setEyePoint(const Vec4& eyePoint) {
+	e = eyePoint;
+}
 void Camera::render(const Scene& scene) {
 
 	//define options:
 	#define INDIRECT
 	#define MULTI_THREADING
 	#define LOGGING
-	int samples = 10;
+	int samples = 30;
 	//*****************
-	max_depth = 0;
 	using namespace std::literals::chrono_literals;
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -42,7 +44,7 @@ void Camera::render(const Scene& scene) {
 		#ifdef LOGGING
 			//LOG progress:
 			percentage = (static_cast<float>((i + 1)) / width) * 100;
-			LOG("\rRendering: " << percentage << std::fixed << std::setprecision(5) << std::left << std::setw(7) << "%");
+			LOG("\r Initializing: " << percentage << std::fixed << std::setprecision(5) << std::left << std::setw(7) << "%");
 			/******************************************/
 		#endif
 
@@ -60,13 +62,12 @@ void Camera::render(const Scene& scene) {
 							float ry = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 							float rz = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 							Vec4 pixelIntersection{ 0.0, (j - quad_size_y + ry) * delta, (i - quad_size_z + rz) * delta };
-							Vec4 dir = pixelIntersection - e1;
-							Ray ray{ e1, dir.normalize() };
+							Vec4 dir = pixelIntersection - e;
+							Ray ray{ e, dir.normalize() };
 							col = col + tracePath(objectList, lightList, ray, 0);
 						}
 						col = col / static_cast<float>(samples);
-						//LOG(*at_i << " " << *at_j << std::endl)
-						//std::lock_guard<std::mutex> lock(sample_mutex);
+						//col.printCoords();
 						pixel_array[i][j].setColor(col);
 
 						return col;
@@ -81,8 +82,8 @@ void Camera::render(const Scene& scene) {
 				float ry = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 				float rz = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 				Vec4 pixelIntersection{ 0.0, (j - quad_size_y + ry) * delta, (i - quad_size_z + rz) * delta };
-				Vec4 dir = pixelIntersection - e1;
-				Ray ray{ e1, dir.normalize() };
+				Vec4 dir = pixelIntersection - e;
+				Ray ray{ e, dir.normalize() };
 				col = col + tracePath(objectList, lightList, ray, 0);
 			}
 			//col = tracePath(objectList, lightList, ray);
@@ -98,17 +99,17 @@ void Camera::render(const Scene& scene) {
 
 	std::chrono::duration<float> duration = end - start;
 	std::cout << "\n******************************\n";
-	std::cout<<"-Finished rendering-\n Time: " << duration.count() << "s";
+	std::cout<<"-Starting rendering-\n Time: " << duration.count() << "s";
 #ifdef MULTI_THREADING
-	std::cout << "\nFinishing...\n";
+	std::cout << "\n Rendering...\n";
 
 	auto wait_start = std::chrono::high_resolution_clock::now();
 	int size = future_vec.size();
-	for (int i = 0; i < future_vec.size(); i++)
+	for (unsigned int i = 0; i < future_vec.size(); i++)
 	{
 		if (i % 1000 == 0)
 		{
-			std::cout << "\rWaiting: " <<i << " / "<< size << std::fixed << std::setprecision(5) << std::left << std::setw(7);
+			std::cout << "\rPixels done: " <<i << " / "<< size << std::fixed << std::setprecision(5) << std::left << std::setw(7);
 		}
 		future_vec[i].wait();
 
@@ -118,36 +119,39 @@ void Camera::render(const Scene& scene) {
 	std::chrono::duration<float> duration2 = wait_end - wait_start;
 	std::cout << "-Finished waiting-\n Time: " << duration2.count() << "s";
 	std::cout << "\n-Total time: " << duration.count() + duration2.count() << "s";
+	std::cout << "\n-Total diffuse bounces: " << max_depth;
 
 #endif
 	std::cout << "\n******************************\n";
 
 
 }
-bool Camera::objectIntersect(const std::vector<std::shared_ptr<Object>> &objectList, Ray& ray, std::shared_ptr<Object>& hitObject, float& t_closest) const
+bool Camera::objectIntersect(const std::vector<std::shared_ptr<Object>> &objectList, 
+	Ray& ray, std::shared_ptr<Object>& hitObject, float& t_closest) const
 {
 	//std::lock_guard<std::mutex> lock(sample_mutex);
-		hitObject = nullptr;
-		float obj_closest = INFINITY_FLOAT;
+	hitObject = nullptr;
+	float obj_closest = INFINITY_FLOAT;
 
-		for (auto object: objectList)
+	for (auto object: objectList)
+	{
+		if (object->castRay(ray, t_closest) && t_closest < obj_closest) //object is hit
 		{
-			if (object->castRay(ray, t_closest) && t_closest < obj_closest) //object is hit
-			{
-				hitObject = object;
-				obj_closest = t_closest;
-			}
-
+			hitObject = object;
+			obj_closest = t_closest;
 		}
 
-		if (hitObject == nullptr)
-			return false;
+	}
 
-		
+	if (hitObject == nullptr)
+		return false;
+
 	
 	return true;
 }
-ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectList, const std::vector<std::shared_ptr<Mesh>>& lightList, Ray& ray, const int& depth)
+ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectList, 
+	const std::vector<std::shared_ptr<Mesh>>& lightList, 
+	Ray& ray, const int& depth)
 {
 	if (depth > max_depth)
 	{
@@ -157,10 +161,15 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 
 	ColorDbl col;
 	std::shared_ptr<Object> hitObject = nullptr;
-	//loop through objects instead of meshes (includes spheres)
+
+	//options: *************************
 	float t_temp = INFINITY_FLOAT;
-	const int SHADOW_RAY_COUNT = 5;
-	const int N = 50;
+	const int SHADOW_RAY_COUNT = 2;
+	int N = 1;
+	const float gamma = 1.0f;
+	const float direct_contribution = 0.8f * gamma;
+	const float indirect_contribution = 0.4f * gamma;
+	//***********************************
 	if (objectIntersect(objectList, ray, hitObject, t_temp))
 	{
 		Material hitMat = hitObject->getMaterial();
@@ -189,18 +198,16 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 				std::uniform_real_distribution<float> dis(0.0, 1.0);
 				float P = dis(gen);
 
-				if (P > 1 - hitMat.absorption && depth > EPSILON)
-					return ColorDbl{};
 
 				float radiance = 0.0f;
-				ColorDbl indirect_col;
+				
 
 
 				//Direct lighting:
 				for (const auto light: lightList)
 				{
 
-					//*****move******
+					//TODO: check if light normal is in the same direction as hitnormal!
 					const auto tlist = light->getTriangleList();
 					Material emission_mat = light->getMaterial();
 					for (int j = 0; j < SHADOW_RAY_COUNT; j++)
@@ -211,7 +218,7 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 							//Triangle* t = tlist.front() + i;
 							float A = t->calculateArea();
 							//LOG("area: " << A << "\n")
-							float pdf = 1 / A;
+							float PDF = 1 / A;
 							float u = dis(gen);
 							float v = dis(gen);
 							Vec4 q = t->pickRandomPoint(u, v);
@@ -220,6 +227,7 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 							Ray shadow_ray{ hitPoint, lightDir.normalize() };
 
 							float BRDF = lightDir.normalize().dotProduct(norm_hit);
+							//float BRDF = hitMat.reflectance / M_PI;
 
 							float lightDistance = lightDir.dotProduct(lightDir);
 
@@ -229,7 +237,8 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 							if (BRDF > EPSILON)
 							{
 								//if object is not in shadow -> calculate radiance from the point.
-								if (!(objectIntersect(objectList, shadow_ray, shadowObject, t_shadow) && t_shadow * t_shadow < lightDistance)) //causes undefined - objectlist
+								if (!(objectIntersect(objectList, shadow_ray, shadowObject, t_shadow) && 
+									t_shadow * t_shadow < lightDistance))
 								{
 									Vec4 Sk = q - hitPoint;
 									float dk = Sk.euclideanDist();
@@ -237,7 +246,7 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 									Vec4 Nx = norm_hit;
 									float alpha = -Sk.dotProduct(Na) / dk;
 									float beta = Sk.dotProduct(Nx) / dk;
-									radiance += emission_mat.intensity * BRDF * ((alpha * beta) / (dk*dk)) * A / pdf; //no Vk 
+									radiance += emission_mat.intensity * BRDF * ((alpha * beta) / (dk * dk));// *A / PDF; //no Vk 
 
 								}
 							}
@@ -245,49 +254,59 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 					}
 				}
 				radiance = radiance / SHADOW_RAY_COUNT;
-				
+				ColorDbl directColor = hitColor * radiance;
+				ColorDbl indirect_col; //irradiance
 				//Monte Carlo things: (INDIRECT LIGHT)
-					
 				#ifdef INDIRECT
+
+				if (P > 1 - hitMat.absorption && depth > EPSILON)
+					return directColor;
+
+				
 				//local coordinate system directions for hitpoint:
-				Vec4 Y;
-				if (fabs(norm_hit.coords[0] > fabs(norm_hit.coords[1])))
-				{
-					Y = Vec4(norm_hit.coords[2], 0.0f, -norm_hit.coords[0]).normalize();
-				}
-				else
-				{
-					Y = Vec4(0.0, -norm_hit.coords[2], norm_hit.coords[1]).normalize();
-				}
-				Vec4 X = norm_hit.crossProduct(X);
+				//Vec4 Y;
+				//if (fabs(norm_hit.coords[0] > fabs(norm_hit.coords[1])))
+				//{
+				//	Y = Vec4(norm_hit.coords[2], 0.0f, -norm_hit.coords[0]).normalize();
+				//}
+				//else
+				//{
+				//	Y = Vec4(0.0, -norm_hit.coords[2], norm_hit.coords[1]).normalize();
+				//}
+				//Vec4 X = norm_hit.crossProduct(X);
+				//Vec4 Z = norm_hit;
+
+				Vec4 X = dir - (dir.dotProduct(norm_hit) * norm_hit).normalize();
 				Vec4 Z = norm_hit;
+				Vec4 Y = X.crossProduct(Z) * -1;
 
+
+				//Vec4 v1 = dir - (dir.dotProduct(norm_hit) * norm_hit).normalize();
+				//Vec4 v3 = norm_hit;
+				//Vec4 v2 = -v1.crossProduct(v3);
+
+				
 				const float PDF = 1 / (2.0f * static_cast<float>(M_PI));
-
-					
 				for (int i = 0; i < N; i++)
 				{
-					//float u = dis(gen);
-					//float v = dis(gen);
-					//float r_phi = u * 2.0f * static_cast<float>(M_PI);
-					//float r_theta = acosf(sqrtf(v));
-					//float r_theta = acosf(1 - 2 * v);
-
-
-					//Vec4 randHemiDir = { sinf(r_phi) * sinf(r_theta), sinf(r_phi) * cosf(r_theta), sinf(r_theta) };
 					float u = dis(gen);
 					float v = dis(gen);
 
-					float terminate = (2.0f * static_cast<float>(M_PI)) / P * u;
-					if (terminate > 2.0f * static_cast<float>(M_PI))
+					if ((2.0f * static_cast<float>(M_PI)) / P * u > 2.0f * static_cast<float>(M_PI)) //assuming N = 1 always now.
 					{
+						N = i+1;
 						break;
 					}
+					
 
-					float r_theta = sqrtf(u);
-					float r_phi = 2.0f * static_cast<float>(M_PI)* v;
+					float r_phi = u * 2.0f * static_cast<float>(M_PI);
+					float r_theta = asinf(sqrtf(v));
+					Vec4 randHemiDir = { sinf(r_phi) * sinf(r_theta), sinf(r_phi) * cosf(r_theta), sinf(r_theta) };
 
-					Vec4 randHemiDir = { r_theta * cosf(r_phi) ,u, r_theta * sinf(r_phi) };
+					//float BRDF = hitMat.reflectance / M_PI;
+					//float r_theta = sqrtf(u);
+					//float r_phi = 2.0f * static_cast<float>(M_PI) * v;
+					//Vec4 randHemiDir = { r_theta * cosf(r_phi) ,u, r_theta * sinf(r_phi) };
 
 					//transform to world coords
 					float x = randHemiDir.coords[0] * X.coords[0] + randHemiDir.coords[1] * Y.coords[0] + randHemiDir.coords[2] * Z.coords[0];
@@ -299,15 +318,14 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 					//M.printCoords();
 					Ray indirect_ray = { hitPoint, M };
 					//M.printCoords();
-					indirect_col = indirect_col + ((tracePath(objectList, lightList, indirect_ray, depth +1) / PDF) * P);
+					indirect_col = indirect_col + (tracePath(objectList, lightList, indirect_ray, depth + 1) * hitMat.reflectance); // * P;
 					//indirect_col.printCoords();
+					
 				}
 				indirect_col = indirect_col / N;
 				#endif // DEBUG
-				//LOG("radiance: "<< radiance << std::endl)
-				col = (hitColor * radiance) +indirect_col;
-				//col.printCoords();
-				//col = indirect_col;
+
+				col = (directColor * direct_contribution) + (indirect_col * indirect_contribution);
 				break;
 
 			}

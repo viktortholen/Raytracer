@@ -22,6 +22,7 @@ public:
 	ColorDbl tracePath(const std::vector<std::shared_ptr<Object>>& objectList, const std::vector<std::shared_ptr<Mesh>>& lightList, Ray& ray, const int& depth);
 	
 	bool objectIntersect(const std::vector<std::shared_ptr<Object>>& objectList, Ray& ray, std::shared_ptr<Object>& hitObject, float& t_closest) const;
+	void setEyePoint(const Vec4& eyePoint);
 private:
 	const int width = 800;
 	const int height = 800;
@@ -29,9 +30,7 @@ private:
 	const float INFINITY_FLOAT = std::numeric_limits<float>::max();
 
 	Pixel** pixel_array;
-	const Vec4 e1{ -1,0,0 };
-	const Vec4 e2{ -2,0,0 };
-	bool eyePoint = 0;
+	Vec4 e{ -1,0,0 };
 	std::vector<std::future<ColorDbl>> future_vec;
-
+	int max_depth = 0;
 };

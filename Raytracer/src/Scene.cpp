@@ -24,16 +24,19 @@ std::vector<std::shared_ptr<Mesh>> Scene::getLightList() const {
 	return lightList;
 }
 void Scene::createScene() {
-	Material diff_mat{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.950f };
-	Material refl_mat{ MaterialType::REFLECTIVE_LAMBERTIAN, ColorDbl(255,255,255), 0.1f };
-	Material emission_mat{ MaterialType::EMISSION, ColorDbl(255,255,255), 0.0f};
+	Material diff_mat{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.90f, 0.9f }; //room
+	Material diff_mat2{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.99f, 0.5f }; 
+	Material diff_mat3{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.7f , 0.9f};
+	Material refl_mat{ MaterialType::REFLECTIVE_LAMBERTIAN, ColorDbl(255,255,255), 0.0f, 0.0f };
+	Material emission_mat{ MaterialType::EMISSION, ColorDbl(255,255,255), 0.0f, 0.0f};
 
-	createTetra(Vec4(6, 0, -3), 2.0f, refl_mat);
-	createCube(Vec4(6, -2, -3), 2.0f, diff_mat);
+	//createTetra(Vec4(6, 0, -4), 2.0f, refl_mat);
+	createCube(Vec4(8, 3, -1.5), 3.0f, 7.0f, diff_mat2);
+	createCube(Vec4(6, -2.5, -4), 2.0f,2.0f, diff_mat3);
 	createRoom(diff_mat);
-	createPlane(Vec4(6, -2, 4.9), 2.0f, emission_mat);
-	createPlane(Vec4(6, 2, 4.9), 2.0f, emission_mat);
-	createSphere(Vec4(6, 3, -3), 1, refl_mat);
+	createPlane(Vec4(5, 0, 4.9999), 3.0f, emission_mat);
+	//createPlane(Vec4(6, 2, 4.9), 2.0f, emission_mat);
+	createSphere(Vec4(5, 3, -4), 1, refl_mat);
 	
 	
 
@@ -72,19 +75,19 @@ void Scene::createSphere(const Vec4& p, const float& size, const Material& m)
 	Sphere* sphere = new Sphere(size, p, m);
 	objectList.push_back(std::shared_ptr<Sphere>(sphere));
 }
-void Scene::createCube(const Vec4& p, const float& size, const Material& m)
+void Scene::createCube(const Vec4& p, const float& width, const float& height, const Material& m)
 {
 	Mesh* cube = new Mesh(m);
 
-	Vec4 v0(p.coords[0] - size / 2, p.coords[1] - size / 2, p.coords[2] - size / 2);
-	Vec4 v1(p.coords[0] - size / 2, p.coords[1] + size / 2, p.coords[2] - size / 2);
-	Vec4 v2(p.coords[0] + size / 2, p.coords[1] + size / 2, p.coords[2] - size / 2);
-	Vec4 v3(p.coords[0] + size / 2, p.coords[1] - size / 2, p.coords[2] - size / 2);
+	Vec4 v0(p.coords[0] - width / 2, p.coords[1] - width / 2, p.coords[2] - height / 2);
+	Vec4 v1(p.coords[0] - width / 2, p.coords[1] + width / 2, p.coords[2] - height / 2);
+	Vec4 v2(p.coords[0] + width / 2, p.coords[1] + width / 2, p.coords[2] - height / 2);
+	Vec4 v3(p.coords[0] + width / 2, p.coords[1] - width / 2, p.coords[2] - height / 2);
 
-	Vec4 v4(p.coords[0] - size / 2, p.coords[1] - size / 2, p.coords[2] + size / 2);
-	Vec4 v5(p.coords[0] - size / 2, p.coords[1] + size / 2, p.coords[2] + size / 2);
-	Vec4 v6(p.coords[0] + size / 2, p.coords[1] + size / 2, p.coords[2] + size / 2);
-	Vec4 v7(p.coords[0] + size / 2, p.coords[1] - size / 2, p.coords[2] + size / 2);
+	Vec4 v4(p.coords[0] - width / 2, p.coords[1] - width / 2, p.coords[2] + height / 2);
+	Vec4 v5(p.coords[0] - width / 2, p.coords[1] + width / 2, p.coords[2] + height / 2);
+	Vec4 v6(p.coords[0] + width / 2, p.coords[1] + width / 2, p.coords[2] + height / 2);
+	Vec4 v7(p.coords[0] + width / 2, p.coords[1] - width / 2, p.coords[2] + height / 2);
 	//Botten
 	cube->addTriangleToMesh(new Triangle(v0, v1, v3, m.diff_col));
 	cube->addTriangleToMesh(new Triangle(v1, v2, v3, m.diff_col));

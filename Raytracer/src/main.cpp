@@ -8,6 +8,7 @@ int main() {
 	theScene.createScene();
 
 	Camera camera{};
+	camera.setEyePoint(Vec4{ -1,0,0 });
 	camera.render(theScene);
 
 	std::cout << "exiting render" << std::endl;
