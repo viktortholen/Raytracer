@@ -23,7 +23,7 @@ void Camera::render(const Scene& scene) {
 	#define INDIRECT
 	#define MULTI_THREADING
 	#define LOGGING
-	int samples = 30;
+	int samples = 5;
 	//*****************
 	using namespace std::literals::chrono_literals;
 	auto start = std::chrono::high_resolution_clock::now();
@@ -167,15 +167,15 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 	const int SHADOW_RAY_COUNT = 2;
 	int N = 1;
 	const float gamma = 1.0f;
-	const float direct_contribution = 0.8f * gamma;
-	const float indirect_contribution = 0.4f * gamma;
+	const float direct_contribution = 1.0f * gamma;
+	const float indirect_contribution = 0.5f * gamma;
 	//***********************************
 	if (objectIntersect(objectList, ray, hitObject, t_temp))
 	{
 		Material hitMat = hitObject->getMaterial();
 		ColorDbl hitColor = ray.getColor();
 		Vec4 dir = ray.getDirection().normalize();
-		Vec4 norm_hit = ray.getHitNormal().normalize();
+		Vec4 hit_normal = ray.getHitNormal().normalize();
 
 		Vec4 hitPoint = ray.getOffsetEndPointAlongNormal(EPSILON);
 
@@ -184,7 +184,7 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 			case(MaterialType::REFLECTIVE_LAMBERTIAN): //perfect mirror
 			{
 
-				Vec4 refl_dir = dir.reflect(norm_hit).normalize(); //perfect reflection
+				Vec4 refl_dir = dir.reflect(hit_normal).normalize(); //perfect reflection
 				//trace new ray in the reflection direction:
 				Ray refl_ray{ hitPoint, refl_dir };
 
@@ -200,8 +200,7 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 
 
 				float radiance = 0.0f;
-				
-
+			
 
 				//Direct lighting:
 				for (const auto light: lightList)
@@ -226,7 +225,7 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 							Vec4 lightDir = q - hitPoint;
 							Ray shadow_ray{ hitPoint, lightDir.normalize() };
 
-							float BRDF = lightDir.normalize().dotProduct(norm_hit);
+							float BRDF = lightDir.normalize().dotProduct(hit_normal);
 							//float BRDF = hitMat.reflectance / M_PI;
 
 							float lightDistance = lightDir.dotProduct(lightDir);
@@ -243,11 +242,10 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 									Vec4 Sk = q - hitPoint;
 									float dk = Sk.euclideanDist();
 									Vec4 Na =t->getNormal();
-									Vec4 Nx = norm_hit;
+									Vec4 Nx = hit_normal;
 									float alpha = -Sk.dotProduct(Na) / dk;
 									float beta = Sk.dotProduct(Nx) / dk;
 									radiance += emission_mat.intensity * BRDF * ((alpha * beta) / (dk * dk));// *A / PDF; //no Vk 
-
 								}
 							}
 						}
@@ -259,30 +257,31 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 				//Monte Carlo things: (INDIRECT LIGHT)
 				#ifdef INDIRECT
 
-				if (P > 1 - hitMat.absorption && depth > EPSILON)
+				if (P > 1 - hitMat.absorption && depth > 1)
 					return directColor;
 
 				
 				//local coordinate system directions for hitpoint:
 				//Vec4 Y;
-				//if (fabs(norm_hit.coords[0] > fabs(norm_hit.coords[1])))
+				//if (fabs(hit_normal.coords[0] > fabs(hit_normal.coords[1])))
 				//{
-				//	Y = Vec4(norm_hit.coords[2], 0.0f, -norm_hit.coords[0]).normalize();
+				//	Y = Vec4(hit_normal.coords[2], 0.0f, -hit_normal.coords[0]).normalize();
 				//}
 				//else
 				//{
-				//	Y = Vec4(0.0, -norm_hit.coords[2], norm_hit.coords[1]).normalize();
+				//	Y = Vec4(0.0, -hit_normal.coords[2], hit_normal.coords[1]).normalize();
 				//}
-				//Vec4 X = norm_hit.crossProduct(X);
-				//Vec4 Z = norm_hit;
+				//Vec4 X = hit_normal.crossProduct(X);
+				//Vec4 Z = hit_normal;
 
-				Vec4 X = dir - (dir.dotProduct(norm_hit) * norm_hit).normalize();
-				Vec4 Z = norm_hit;
-				Vec4 Y = X.crossProduct(Z) * -1;
+				Vec4 X = (dir - (dir.dotProduct(hit_normal) * hit_normal)).normalize();
+				Vec4 Z = hit_normal;
+				Vec4 X_neg = X * -1.0f;
+				Vec4 Y = X_neg.crossProduct(Z);
 
-
-				//Vec4 v1 = dir - (dir.dotProduct(norm_hit) * norm_hit).normalize();
-				//Vec4 v3 = norm_hit;
+				
+				//Vec4 v1 = dir - (dir.dotProduct(hit_normal) * hit_normal).normalize();
+				//Vec4 v3 = hit_normal;
 				//Vec4 v2 = -v1.crossProduct(v3);
 
 				
@@ -291,8 +290,8 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 				{
 					float u = dis(gen);
 					float v = dis(gen);
-
-					if ((2.0f * static_cast<float>(M_PI)) / P * u > 2.0f * static_cast<float>(M_PI)) //assuming N = 1 always now.
+					
+					if ((2.0f * static_cast<float>(M_PI)) / P * u > 2.0f * static_cast<float>(M_PI) && depth > 1)
 					{
 						N = i+1;
 						break;
@@ -301,46 +300,46 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 
 					float r_phi = u * 2.0f * static_cast<float>(M_PI);
 					float r_theta = asinf(sqrtf(v));
-					Vec4 randHemiDir = { sinf(r_phi) * sinf(r_theta), sinf(r_phi) * cosf(r_theta), sinf(r_theta) };
-
+					Vec4 randHemiDir = { cosf(r_phi) * sinf(r_theta), sinf(r_phi) * sinf(r_theta), cosf(r_theta) };
+					/*std::cout << r_phi << " " << r_theta << "\n";*/
 					//float BRDF = hitMat.reflectance / M_PI;
 					//float r_theta = sqrtf(u);
 					//float r_phi = 2.0f * static_cast<float>(M_PI) * v;
 					//Vec4 randHemiDir = { r_theta * cosf(r_phi) ,u, r_theta * sinf(r_phi) };
 
 					//transform to world coords
-					float x = randHemiDir.coords[0] * X.coords[0] + randHemiDir.coords[1] * Y.coords[0] + randHemiDir.coords[2] * Z.coords[0];
-					float y = randHemiDir.coords[0] * X.coords[1] + randHemiDir.coords[1] * Y.coords[1] + randHemiDir.coords[2] * Z.coords[1];
-					float z = randHemiDir.coords[0] * X.coords[2] + randHemiDir.coords[1] * Y.coords[2] + randHemiDir.coords[2] * Z.coords[2];
+					float x = randHemiDir.coords[0] * X.coords[0] + randHemiDir.coords[1] *Y.coords[0] + randHemiDir.coords[2] *Z.coords[0];
+					float y = randHemiDir.coords[0] * X.coords[1] + randHemiDir.coords[1] *Y.coords[1] + randHemiDir.coords[2] *Z.coords[1];
+					float z = randHemiDir.coords[0] * X.coords[2] + randHemiDir.coords[1] *Y.coords[2] + randHemiDir.coords[2] *Z.coords[2];
 
 					//trace path
 					Vec4 M = { x,y,z,1 };
 					//M.printCoords();
 					Ray indirect_ray = { hitPoint, M };
 					//M.printCoords();
-					indirect_col = indirect_col + (tracePath(objectList, lightList, indirect_ray, depth + 1) * hitMat.reflectance); // * P;
+					indirect_col = indirect_col + (tracePath(objectList, lightList, indirect_ray, depth+1));
 					//indirect_col.printCoords();
-					
 				}
+				
+				//indirect_col.printCoords();
+				//std::cout << std::endl;
 				indirect_col = indirect_col / N;
 				#endif // DEBUG
-
-				col = (directColor * direct_contribution) + (indirect_col * indirect_contribution);
+				
+				ColorDbl normalize(255, 255, 255);
+				col = ((normalize * radiance * direct_contribution) + (indirect_col * indirect_contribution)) * hitColor / normalize;
 				break;
 
 			}
 			case(MaterialType::EMISSION):
 			{
-				//LOG("hit light \n")
-				return ColorDbl(255, 255, 255);
+				return ColorDbl(255, 255, 255)* hitMat.intensity;
+
 			}
 			default:
 			{
 				break;
 			}
-		break;
-			
-
 		}
 	}
 	return col;

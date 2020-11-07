@@ -34,6 +34,13 @@ public:
 		tmp.color[2] *= c.color[2];
 		return tmp;
 	}
+	ColorDbl operator/(const ColorDbl& c) {
+		ColorDbl tmp{ *this };
+		tmp.color[0] /= c.color[0];
+		tmp.color[1] /= c.color[1];
+		tmp.color[2] /= c.color[2];
+		return tmp;
+	}
 	ColorDbl operator+=(const ColorDbl& c) {
 		ColorDbl tmp{ *this };
 		tmp.color[0] += c.color[0];

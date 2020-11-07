@@ -24,20 +24,21 @@ std::vector<std::shared_ptr<Mesh>> Scene::getLightList() const {
 	return lightList;
 }
 void Scene::createScene() {
-	Material diff_mat{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.90f, 0.9f }; //room
-	Material diff_mat2{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.99f, 0.5f }; 
-	Material diff_mat3{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.7f , 0.9f};
+	Material diff_mat{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.1f, 0.4f }; //room
+	Material diff_mat2{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.2f, 0.5f }; 
+	Material diff_mat3{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.99f , 0.9f};
 	Material refl_mat{ MaterialType::REFLECTIVE_LAMBERTIAN, ColorDbl(255,255,255), 0.0f, 0.0f };
 	Material emission_mat{ MaterialType::EMISSION, ColorDbl(255,255,255), 0.0f, 0.0f};
 
+	//objects:
 	//createTetra(Vec4(6, 0, -4), 2.0f, refl_mat);
 	createCube(Vec4(8, 3, -1.5), 3.0f, 7.0f, diff_mat2);
-	createCube(Vec4(6, -2.5, -4), 2.0f,2.0f, diff_mat3);
+	createCube(Vec4(6, -4, -4), 2.0f,2.0f, diff_mat3);
 	createRoom(diff_mat);
-	createPlane(Vec4(5, 0, 4.9999), 3.0f, emission_mat);
-	//createPlane(Vec4(6, 2, 4.9), 2.0f, emission_mat);
 	createSphere(Vec4(5, 3, -4), 1, refl_mat);
-	
+	//lights:
+	createPlane(Vec4(7, -2, 4.9999), 2.0f, emission_mat);
+	createPlane(Vec4(7, 2, 4.9999), 2.0f, emission_mat);
 	
 
 }

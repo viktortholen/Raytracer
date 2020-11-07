@@ -60,18 +60,7 @@ void Triangle::calculateNormal()
 	Vec4 U = v1 - v0;
 	Vec4 V = v2 - v0;
 
-	glm::vec4 Uc = U.coords;
-	glm::vec4 Vc = V.coords;
-
-
-	float Nx = (Uc.y * Vc.z) - (Uc.z * Vc.y);
-	float Ny = (Uc.z * Vc.x) - (Uc.x * Vc.z);
-	float Nz = (Uc.x * Vc.y) - (Uc.y * Vc.x);
-
-	//double Nx = (U.y * V.z) - (U.z * V.y);
-	//double Ny = (U.z * V.x) - (U.x * V.z);
-	//double Nz = (U.x * V.y) - (U.y * V.x);
-	normal = Vec4{ Nx,Ny,Nz };
+	normal = U.crossProduct(V);
 }
 
 float Triangle::calculateArea() const
