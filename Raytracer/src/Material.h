@@ -1,13 +1,13 @@
 #pragma once
 enum class MaterialType
 {
-	DIFFUSE_LAMBERTIAN, REFLECTIVE_LAMBERTIAN, EMISSION
+	DIFFUSE_LAMBERTIAN, REFLECTION, EMISSION, REFRACTION
 };
 struct Material {
 	//Lambertian properties i dont know...
 
-	Material(const MaterialType& _type, const ColorDbl& col, const float& a, const float& r) 
-		:type{ _type }, diff_col{ col }, absorption{ a }, reflectance{r}{}
+	Material(const MaterialType& _type, const ColorDbl& col, const float& a, const float& r, const float& _IOR)
+		:type{ _type }, diff_col{ col }, absorption{ a }, reflectance{ r }, IOR{_IOR}{}
 	Material()
 	{
 		type = MaterialType::DIFFUSE_LAMBERTIAN;
@@ -22,4 +22,5 @@ struct Material {
 	float absorption = 0.9f;
 	float intensity = 1.0f;
 	float reflectance;
+	float IOR;
 };

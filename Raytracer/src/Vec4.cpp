@@ -31,12 +31,13 @@ Vec4 Vec4::operator+(const Vec4& v) const {
 	tmp.coords[2] += v.coords[2];
 	return tmp;
 }
-Vec4 Vec4::operator*(const float& f)
+Vec4 Vec4::operator*(const float& f) const
 {
-	coords[0] *= f;
-	coords[1] *= f;
-	coords[2] *= f;
-	return *this;
+	Vec4 tmp{ *this };
+	tmp.coords[0] *= f;
+	tmp.coords[1] *= f;
+	tmp.coords[2] *= f;
+	return tmp;
 }
 
 Vec4 Vec4::crossProduct(const Vec4& v) const
@@ -67,4 +68,14 @@ Vec4 Vec4::reflect(const Vec4& N) //direction and normal
 {
 	Vec4 dir{ *this };
 	return dir - 2 * dir.dotProduct(N) * N;
+}
+
+Vec4 Vec4::refract(const Vec4& N, const float& n1, const float& n2) {
+	
+	Vec4 dir{ *this };
+	Vec4 tmp = (n1 / n2) * dir + N * (-(n1 / n2) * N.dotProduct(dir) - sqrtf(1 - pow(n1 / n2, 2) * (1 - (pow(N.dotProduct(dir), 2)))));
+	if (tmp.coords[0] < 0 || tmp.coords[1] < 0 || tmp.coords[2] < 0)
+		return Vec4(0, 0, 0);
+	return tmp;
+
 }

@@ -23,7 +23,7 @@ void Camera::render(const Scene& scene) {
 	#define INDIRECT
 	#define MULTI_THREADING
 	#define LOGGING
-	int samples = 5;
+	int samples = 10;
 	//*****************
 	using namespace std::literals::chrono_literals;
 	auto start = std::chrono::high_resolution_clock::now();
@@ -181,7 +181,7 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 
 		switch (hitMat.type)
 		{
-			case(MaterialType::REFLECTIVE_LAMBERTIAN): //perfect mirror
+			case(MaterialType::REFLECTION): //perfect mirror
 			{
 
 				Vec4 refl_dir = dir.reflect(hit_normal).normalize(); //perfect reflection
@@ -189,6 +189,52 @@ ColorDbl Camera::tracePath(const std::vector<std::shared_ptr<Object>> &objectLis
 				Ray refl_ray{ hitPoint, refl_dir };
 
 				col = tracePath(objectList, lightList, refl_ray, depth);
+				break;
+			}
+			case(MaterialType::REFRACTION): //perfect mirror
+			{
+				float n1 = 1.0;
+				float n2 = hitMat.IOR;
+				
+				float cost = hit_normal.dotProduct(dir * -1);
+
+				Vec4 N = hit_normal;
+				if(cost < 0)
+				{
+					cost = -cost;
+				}else
+				{
+					std::swap(n1, n2);
+
+					N = hit_normal * -1;
+				}
+
+
+				Vec4 R = dir.reflect(N).normalize(); //perfect reflection
+				Vec4 T = dir.refract(N, n1 , n2).normalize(); //refraction
+				//trace new ray in the reflection direction:
+				Ray refl_ray{ hitPoint, R };
+				Ray refr_ray{ hitPoint, T };
+
+				ColorDbl refl_col = tracePath(objectList, lightList, refl_ray, depth);
+				ColorDbl refr_col = tracePath(objectList, lightList, refr_ray, depth);
+
+
+				/*float Rs = pow((n1 * cost - n2 * sqrt(1 - pow((n1 / n2) * sinf(acosf(cost)), 2)))
+							/ (n1 * cost + n2 * sqrt(1 - pow((n1 / n2) * sinf(acosf(cost)), 2))), 2);
+				
+				float Rp = pow((n1 * sqrt(1 - pow((n1 / n2) * sinf(acosf(cost)), 2)) - n2*cost)
+							/  (n1 * sqrt(1 - pow((n1 / n2) * sinf(acosf(cost)), 2)) + n2 * cost), 2);
+
+				float refl_coeff = (Rs + Rp) / 2;*/
+
+				float R0 = pow((n1 - n2) / (n1 + n2), 2);
+
+				float refl_coeff = R0 + (1 - R0) * pow((1 - cos(acos(cost))), 5);
+
+				col = (refl_col * refl_coeff) + (refr_col * (1 - refl_coeff));
+				//col = (refr_col * (1 - refl_coeff));
+				//col = tracePath(objectList, lightList, refl_ray, depth);
 				break;
 			}
 			case(MaterialType::DIFFUSE_LAMBERTIAN): //

@@ -1,6 +1,7 @@
 #pragma once
 #include "Includer.h"
 //#include "Triangle.h"
+
 class Vec4 {
 public:
 	Vec4() = default;
@@ -14,7 +15,7 @@ public:
 	Vec4 operator-(const Vec4& v) const;
 	Vec4 operator-(const float& v) const;
 	Vec4 operator+(const Vec4& v) const;
-	Vec4 operator*(const float& f);
+	Vec4 operator*(const float& f) const;
 	friend Vec4 operator* (const float& r, const Vec4& v)
 	{
 		return Vec4(v.coords[0] * r, v.coords[1] * r, v.coords[2] * r, v.coords[3]);
@@ -27,6 +28,7 @@ public:
 	
 	Vec4 normalize();
 	Vec4 reflect(const Vec4& N);
+	Vec4 refract(const Vec4& N, const float& n1, const float& n2);
 
 //private:
 	glm::vec4 coords;
