@@ -22,18 +22,6 @@ Ray& Ray::operator=(const Ray &p)
 
 	return *this;
 }
-//void Ray::setTriangle(Triangle* t)
-//{
-//	endPointTriangle = t;
-//}
-//void Ray::setHitNormal(const Vec4& n)
-//{
-//	hitNormal = n;
-//}
-//void Ray::setEndPoint(const float &t)
-//{
-//	pe = ps + (t * dir.normalize());
-//}
 void Ray::setHitPropertiesMesh(Triangle* t, const float& d)
 {
 	endPointTriangle = t;

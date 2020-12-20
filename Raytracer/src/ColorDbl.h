@@ -70,10 +70,6 @@ public:
 	{
 		std::cout << "\nr: " << color[0] << ", g: " << color[1] << " , b: " << color[2];
 	}
-
-	//ColorDbl operator+=(const ColorDbl& c) {
-	//	return ColorDbl(color.r + c.color.r, color.g + c.color.g, color.b + c.color.b);
-	//}
 private:
 	glm::vec3 color{0,0,0}; //background is black.
 };

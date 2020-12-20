@@ -15,13 +15,6 @@ public:
 	Ray& operator=(const Ray &p);
 	void setHitPropertiesMesh(Triangle* t, const float& d);
 	void setHitPropertiesSphere(const Vec4& n, const ColorDbl& c, const float& d);
-	//void setTriangle(Triangle* t);
-	//void setHitNormal(const Vec4& n);
-	//void setEndPoint(const float& t);
-	//void setColor(const ColorDbl& c)
-	//{
-	//	hitColor = c;
-	//}
 	Vec4 getOffsetEndPointAlongNormal(const float& amount);
 	Triangle* getTriangle();
 	Vec4 getDirection()

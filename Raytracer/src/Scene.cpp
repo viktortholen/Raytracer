@@ -3,18 +3,8 @@
 
 Scene::~Scene()
 {
-	//std::cout << "\ndeleting scene";
-	//for (auto it = objectList.begin(); it != objectList.end(); ++it) {
-	//	delete& it;
-	//}
+
 	objectList.clear();
-	//for (std::vector<Mesh*>::iterator it = lightList.begin(); it != lightList.end(); ++it) {
-	//	if (*it != nullptr)
-	//	{
-	//		delete* it;
-	//	}
-	//	
-	//}
 	lightList.clear();
 }
 std::vector<std::shared_ptr<Object>> Scene::getObjectList() const {
@@ -24,11 +14,11 @@ std::vector<std::shared_ptr<Mesh>> Scene::getLightList() const {
 	return lightList;
 }
 void Scene::createScene() {
-	Material diff_mat{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.5f, 0.8f, 1.0f}; //room
+	Material diff_mat{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.3f, 0.4f, 1.0f}; //room
 	Material diff_mat2{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.4f, 0.5f, 1.0f }; 
-	Material diff_mat3{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.99999f , 0.9f, 1.0f};
+	Material diff_mat3{ MaterialType::DIFFUSE_LAMBERTIAN, ColorDbl(255,255,255), 0.99f , 0.9f, 1.0f};
 	Material refl_mat{ MaterialType::REFLECTION, ColorDbl(255,255,255), 0, 0, 1.0f};
-	Material refr_mat{ MaterialType::REFRACTION, ColorDbl(255,255,255), 0, 0, 1.5f};
+	//Material refr_mat{ MaterialType::REFRACTION, ColorDbl(255,255,255), 0, 0, 1.5f};
 	Material emission_mat{ MaterialType::EMISSION, ColorDbl(255,255,255), 0, 0, 1.0f};
 
 	//objects:
@@ -37,7 +27,8 @@ void Scene::createScene() {
 	createCube(Vec4(6, -4, -4), 2.0f,2.0f, diff_mat3);
 	createRoom(diff_mat);
 	createSphere(Vec4(5, 3, -4), 1, refl_mat);
-	createSphere(Vec4(5, 0, -4), 1, refr_mat);
+	createSphere(Vec4(6, -4, -1), 1, diff_mat2);
+	//createSphere(Vec4(5, 0, -4), 1, refr_mat);
 	//lights:
 	createPlane(Vec4(7, -2, 4.9999), 2.0f, emission_mat);
 	createPlane(Vec4(7, 2, 4.9999), 2.0f, emission_mat);

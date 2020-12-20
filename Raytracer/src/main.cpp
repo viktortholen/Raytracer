@@ -12,7 +12,7 @@ int main() {
 	camera.render(theScene);
 
 	std::cout << "exiting render" << std::endl;
-	camera.createImage("picture.ppm", "LOG");
+	camera.createImage("picture.ppm", "LINEAR");
 
 	return 0;
 }

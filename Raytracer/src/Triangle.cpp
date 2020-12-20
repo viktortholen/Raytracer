@@ -9,7 +9,6 @@ bool Triangle::rayIntersection(Ray& ray, float& t) const {
 	Vec4 T = ray.getStartPoint() - v0;
 	Vec4 E1 = v1 - v0;
 	Vec4 E2 = v2 - v0;
-	//Vec4 D = ray.pe - ray.ps;
 	Vec4 D = ray.getDirection();
 	Vec4 P = D.crossProduct(E2);
 	Vec4 Q = T.crossProduct(E1);
@@ -29,7 +28,7 @@ bool Triangle::rayIntersection(Ray& ray, float& t) const {
 		return false;
 
 	t = Q.dotProduct(E2) / P.dotProduct(E1);
-	//std::cout << "\n "<<t << " " << u << " " << v;
+
 	if (t < EPSILON)
 	{
 		return false;
@@ -71,15 +70,10 @@ float Triangle::calculateArea() const
 	float s = (a + b + c) / 2;
 
 	return sqrtf(s * (s - a) * (s - b) * (s - c));
-
-	//Vec4 A = 0.5*((v1 - v0).crossProduct(v2-v0));
-	//A.printCoords();
-	//return A.euclideanDist();
 }
 Vec4 Triangle::pickRandomPoint(const float &u, const float &v) const
 {
 	return (1 - u - v) * v0 + u * v1 + v * v2;
-	//return u * (v1 - v0) + v * (v2 - v0);
 }
 ColorDbl Triangle::getColor() const {
 	return color;

@@ -3,9 +3,6 @@
 
 Mesh:: ~Mesh()
 {
-	//for (auto it = triangleList.begin(); it != triangleList.end(); ++it) {
-	//	delete* it;
-	//}
 	triangleList.clear();
 }
 std::vector<std::shared_ptr<Triangle>> Mesh::getTriangleList() const

@@ -13,7 +13,6 @@ public:
 	virtual bool castRay(Ray& ray, float& t_closest) const override
 	{
 		Vec4 o = ray.getStartPoint();
-		//Vec4 I = (ray.pe - ray.ps).normalize(); //direction
 		Vec4 I = ray.getDirection(); //direction
 		float a = I.dotProduct(I);
 		float b = 2.0f * I.dotProduct(o - center);
@@ -41,9 +40,6 @@ public:
 		t_closest = d1;
 
 		ray.setHitPropertiesSphere(center ,material.diff_col, d1);
-		//ray.setEndPoint(d1);
-		//ray.setHitNormal((ray.getEndPoint() - center).normalize());
-		//ray.setColor(material.diff_col);
 
 		return true;
 	}

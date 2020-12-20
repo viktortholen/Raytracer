@@ -30,10 +30,7 @@ public:
 	Vec4 reflect(const Vec4& N);
 	Vec4 refract(const Vec4& N, const float& n1, const float& n2);
 
-//private:
 	glm::vec4 coords;
-	//friend class Triangle;
-	//friend class Scene;
-	//friend class Camera;
+
 
 };
